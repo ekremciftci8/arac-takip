@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <!-- Mobil Uygulama Modu -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Araçlarım</title>
@@ -18,848 +12,928 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1A1D24;
-    --surface:#242832;
-    --surface2:#2C313D;
-    --orange:#E8873A;
-    --sage:#7FA97F;
-    --rust:#C1785A;
-    --paper:#F0EEE8;
-    --muted:#8B92A0;
-    --border:#3A4051;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;background:var(--ink);color:var(--paper);
-    font-family:'IBM Plex Sans',-apple-system,sans-serif;min-height:100vh;
-    padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
-  }
-  .page{max-width:640px;margin:0 auto;padding:24px 20px 60px;}
-  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-  .app-title{font-family:'Newsreader',Georgia,serif;font-size:26px;font-weight:600;}
-  .header-btn{background:transparent;border:none;color:var(--orange);cursor:pointer;font-size:18px;padding:4px 8px;}
+:root{
+  --ink:#1A1D24;--surface:#242832;--surface2:#2C313D;
+  --accent:#E8873A;--sage:#7FA97F;--rust:#C1785A;
+  --paper:#F0EEE8;--muted:#8B92A0;--border:#3A4051;
+}
+:root.light{
+  --ink:#F5F3EE;--surface:#FFFFFF;--surface2:#EDE9E1;
+  --paper:#1A1D24;--muted:#7A7A8A;--border:#D8D4CC;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{background:var(--ink);color:var(--paper);font-family:'IBM Plex Sans',-apple-system,sans-serif;min-height:100vh;padding-bottom:80px;padding-top:env(safe-area-inset-top);}
 
-  .vehicle-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:4px;}
-  .vehicle-tab{
-    flex:0 0 auto;background:var(--surface);border:1px solid var(--border);color:var(--muted);
-    border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;
-  }
-  .vehicle-tab.active{background:rgba(232,135,58,0.15);border-color:var(--orange);color:var(--orange);}
-  .vehicle-tab-add{
-    flex:0 0 auto;background:transparent;border:1px dashed var(--border);color:var(--muted);
-    border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer;white-space:nowrap;
-  }
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s;}
+#splash.hide{opacity:0;pointer-events:none;}
+.splash-icon{width:80px;height:80px;border-radius:20px;background:rgba(232,135,58,0.15);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.splash-title{font-family:'Newsreader',serif;font-size:28px;font-weight:600;color:var(--paper);}
+.splash-sub{font-size:13px;color:var(--muted);margin-top:6px;}
 
-  .tab-buttons{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto;}
-  .tab-btn{
-    flex:0 0 auto;background:transparent;border:none;color:var(--muted);
-    padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;
-    border-bottom:2px solid transparent;white-space:nowrap;
-  }
-  .tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
+/* LAYOUT */
+.page{max-width:640px;margin:0 auto;padding:16px 16px 0;}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
-  .card-row{display:flex;gap:10px;flex-wrap:wrap;}
-  .card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
-  input,select,textarea{
-    background:var(--ink);border:1px solid var(--border);border-radius:8px;
-    padding:10px 12px;color:var(--paper);font-family:inherit;font-size:14px;outline:none;flex:1;min-width:0;
-  }
-  input:focus,select:focus,textarea:focus{border-color:var(--orange);}
-  textarea{resize:vertical;min-height:50px;}
-  input[type="file"]{cursor:pointer;}
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.app-title{font-family:'Newsreader',serif;font-size:24px;font-weight:600;}
+.header-actions{display:flex;gap:8px;}
+.hbtn{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--paper);cursor:pointer;font-size:16px;}
 
-  .ghost-btn{background:transparent;border:none;color:var(--muted);padding:9px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;}
-  .ghost-btn:hover{color:var(--paper);}
-  .primary-btn{background:var(--orange);border:none;color:var(--ink);padding:9px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
-  .primary-btn-small{background:var(--orange);border:none;color:var(--ink);padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;}
-  .error-text{color:var(--rust);font-size:13px;margin-top:8px;}
+/* ARAÇ SEKME */
+.vehicle-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.vehicle-tabs::-webkit-scrollbar{display:none;}
+.vtab{flex:0 0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);white-space:nowrap;}
+.vtab.active{border-color:var(--accent);color:var(--accent);background:rgba(232,135,58,0.1);}
+.vtab-photo{width:22px;height:22px;border-radius:50%;object-fit:cover;background:var(--border);}
+.vtab-add{flex:0 0 auto;border:1px dashed var(--border);border-radius:12px;padding:8px 14px;font-size:13px;cursor:pointer;color:var(--muted);background:transparent;white-space:nowrap;}
 
-  .km-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .km-label{font-size:13px;color:var(--muted);}
-  .km-value{font-family:'Newsreader',Georgia,serif;font-size:28px;font-weight:500;}
-  .km-edit-btn{background:var(--ink);border:1px solid var(--border);color:var(--orange);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;}
+/* ARAÇ KAPAK */
+.vehicle-cover{position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;height:140px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+.vehicle-cover img{width:100%;height:100%;object-fit:cover;}
+.vehicle-cover-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,29,36,0.85),transparent);display:flex;align-items:flex-end;padding:14px;}
+.vehicle-cover-info{flex:1;}
+.vehicle-cover-name{font-family:'Newsreader',serif;font-size:22px;font-weight:600;}
+.vehicle-cover-sub{font-size:12px;color:rgba(240,238,232,0.7);margin-top:2px;}
+.cover-edit-btn{background:rgba(255,255,255,0.15);border:none;color:var(--paper);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);}
 
-  .section-head{display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px;}
-  .section-title{font-family:'Newsreader',Georgia,serif;font-size:19px;font-weight:500;}
-  .icon-btn{
-    display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--orange);
-    color:var(--orange);border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;cursor:pointer;
-  }
+/* MUAYENE WIDGET */
+.service-widget{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px;}
+.sw-card{border-radius:12px;padding:12px;border:1px solid;position:relative;overflow:hidden;}
+.sw-card.ok{background:rgba(127,169,127,0.1);border-color:var(--sage);}
+.sw-card.warn{background:rgba(232,135,58,0.1);border-color:var(--orange,var(--accent));}
+.sw-card.overdue{background:rgba(193,120,90,0.15);border-color:var(--rust);}
+.sw-name{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.sw-days{font-family:'Newsreader',serif;font-size:28px;font-weight:600;margin:4px 0 2px;}
+.sw-days.ok{color:var(--sage);}
+.sw-days.warn{color:var(--accent);}
+.sw-days.overdue{color:var(--rust);}
+.sw-date{font-size:11px;color:var(--muted);}
 
-  .empty{background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:30px 20px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5;}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:100;}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;background:transparent;border:none;color:var(--muted);font-size:10px;font-family:inherit;cursor:pointer;font-weight:600;}
+.bnav-btn.active{color:var(--accent);}
+.bnav-icon{font-size:20px;line-height:1;}
 
-  .alert-item{
-    display:flex;justify-content:space-between;align-items:center;gap:10px;
-    background:rgba(193,120,90,0.12);border:1px solid var(--rust);border-radius:10px;
-    padding:12px 14px;margin-bottom:10px;
-  }
-  .alert-item.upcoming{background:rgba(232,135,58,0.1);border-color:var(--orange);}
-  .alert-title{font-size:14px;font-weight:600;}
-  .alert-sub{font-size:12px;color:var(--muted);margin-top:2px;}
-  .alert-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;}
-  .alert-tag.overdue{background:var(--rust);color:var(--ink);}
-  .alert-tag.upcoming{background:var(--orange);color:var(--ink);}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
+.card-row{display:flex;gap:8px;flex-wrap:wrap;}
+.card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+input,select,textarea{background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--paper);font-family:inherit;font-size:14px;outline:none;flex:1;min-width:0;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:60px;}
+.lbl{font-size:11px;color:var(--muted);margin-bottom:4px;display:block;}
+.field{flex:1;min-width:140px;}
+.ghost-btn{background:transparent;border:none;color:var(--muted);padding:9px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;}
+.primary-btn{background:var(--accent);border:none;color:var(--ink);padding:10px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.primary-btn-sm{background:var(--accent);border:none;color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.danger-btn{background:transparent;border:1px solid var(--rust);color:var(--rust);padding:9px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;width:100%;margin-top:8px;}
+.outline-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;cursor:pointer;}
+.err{color:var(--rust);font-size:13px;margin-top:6px;}
+.empty{background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:30px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6;}
 
-  .record-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
-  .record-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .record-type{font-size:15px;font-weight:600;}
-  .record-meta{font-size:12px;color:var(--muted);margin-top:3px;}
-  .record-cost{font-family:'Newsreader',Georgia,serif;font-size:17px;color:var(--orange);white-space:nowrap;}
-  .record-photo{width:100%;max-width:200px;border-radius:8px;margin-top:8px;border:1px solid var(--border);}
-  .record-note{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
-  .record-next{font-size:12px;color:var(--sage);margin-top:6px;}
-  .trash-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:2px;font-size:15px;}
-  .trash-btn:hover{color:var(--rust);}
+/* SECTION */
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;}
+.section-title{font-family:'Newsreader',serif;font-size:18px;font-weight:500;}
 
-  .total-bar{
-    display:flex;justify-content:space-between;align-items:center;
-    background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:20px;
-  }
-  .total-label{font-size:13px;color:var(--muted);}
-  .total-value{font-family:'Newsreader',Georgia,serif;font-size:22px;font-weight:600;color:var(--orange);}
+/* STATS */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-card{background:var(--surface2);border-radius:12px;padding:14px;}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.stat-value{font-family:'Newsreader',serif;font-size:22px;font-weight:600;color:var(--accent);}
+.stat-value.sage{color:var(--sage);}
 
-  .field-label{font-size:11px;color:var(--muted);margin-bottom:4px;display:block;}
-  .field{flex:1;min-width:130px;}
+/* ALERTS */
+.alert-box{display:flex;justify-content:space-between;align-items:center;gap:10px;border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid;}
+.alert-box.red{background:rgba(193,120,90,0.15);border-color:var(--rust);}
+.alert-box.orange{background:rgba(232,135,58,0.1);border-color:var(--accent);}
+.alert-box.yellow{background:rgba(232,135,58,0.06);border-color:#b8862a;}
+.alert-title{font-size:14px;font-weight:600;}
+.alert-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.badge.red{background:var(--rust);color:var(--ink);}
+.badge.orange{background:var(--accent);color:var(--ink);}
 
-  .filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-  .filter-btn{
-    background:var(--ink);border:1px solid var(--border);color:var(--muted);
-    border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;
-  }
-  .filter-btn.active{background:rgba(232,135,58,0.15);border-color:var(--orange);color:var(--orange);}
-  .filter-btn.clear{background:transparent;}
+/* RECORDS */
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;}
+.rcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.rcard-type{font-size:15px;font-weight:600;}
+.rcard-meta{font-size:12px;color:var(--muted);margin-top:3px;}
+.rcard-cost{font-family:'Newsreader',serif;font-size:17px;color:var(--accent);white-space:nowrap;}
+.rcard-next{font-size:12px;color:var(--sage);margin-top:6px;}
+.rcard-note{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.rcard-photo{width:100%;max-width:220px;border-radius:8px;margin-top:8px;border:1px solid var(--border);}
+.del-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;flex-shrink:0;}
+.del-btn:hover{color:var(--rust);}
 
-  .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100;}
-  .modal.open{display:flex;}
-  .modal-content{background:var(--surface);border-radius:14px;padding:20px;max-width:90%;max-height:80vh;overflow-y:auto;margin:20px;}
-  .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;}
+/* FILTER */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.fbtn{background:var(--ink);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;}
+.fbtn.active{border-color:var(--accent);color:var(--accent);}
+
+/* KM */
+.km-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.km-val{font-family:'Newsreader',serif;font-size:30px;font-weight:500;}
+.km-lbl{font-size:12px;color:var(--muted);}
+.km-btn{background:var(--ink);border:1px solid var(--border);color:var(--accent);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none !important;align-items:flex-end;justify-content:center;z-index:200;}
+.modal.open{display:flex !important;}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+
+/* CHART */
+.chart-bar-wrap{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.chart-bar-row{display:flex;align-items:center;gap:8px;}
+.chart-bar-label{font-size:12px;color:var(--muted);width:40px;text-align:right;flex-shrink:0;}
+.chart-bar-bg{flex:1;height:20px;background:var(--ink);border-radius:4px;overflow:hidden;}
+.chart-bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+.chart-bar-val{font-size:12px;color:var(--muted);width:70px;text-align:left;flex-shrink:0;}
+
+/* COLOR PICKER */
+.color-opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.color-opt{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;}
+.color-opt.selected{border-color:white;}
+
+/* CONTACT */
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.call-btn{background:var(--sage);border:none;color:var(--ink);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+/* CAL */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px;}
+.cal-day-name{text-align:center;font-size:11px;color:var(--muted);padding:4px 0;}
+.cal-day{text-align:center;font-size:13px;padding:6px 4px;border-radius:6px;}
+.cal-day.today{background:var(--accent);color:var(--ink);font-weight:700;}
+.cal-day.has-event{background:rgba(232,135,58,0.2);color:var(--accent);font-weight:600;}
+.cal-day.has-alert{background:rgba(193,120,90,0.3);color:var(--rust);font-weight:700;}
+.cal-day.other-month{color:var(--border);}
+
+/* REPEAT RULE */
+.repeat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(127,169,127,0.15);border:1px solid var(--sage);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--sage);margin-top:4px;}
 </style>
 </head>
 <body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-icon">
+    <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+      <path d="M22 62A28 28 0 1 1 78 62" stroke="#E8873A" stroke-width="7" stroke-linecap="round"/>
+      <line x1="50" y1="62" x2="68" y2="40" stroke="#E8873A" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="50" cy="62" r="7" fill="#E8873A"/>
+    </svg>
+  </div>
+  <div class="splash-title">Araçlarım</div>
+  <div class="splash-sub">Bakım takip uygulaması</div>
+</div>
+
 <div class="page">
   <div class="header">
     <div class="app-title">Araçlarım</div>
-    <button class="header-btn" onclick="openBackupModal()" title="Yedekle/Geri Yükle">⬇️</button>
+    <div class="header-actions">
+      <button class="hbtn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+      <button class="hbtn" onclick="openShare()">📤</button>
+      <button class="hbtn" onclick="openSettings()">⚙️</button>
+    </div>
   </div>
 
   <div class="vehicle-tabs" id="vehicleTabs"></div>
 
   <div id="newVehicleForm" class="card" style="display:none;">
-    <div class="card-row">
-      <input id="newVehicleName" placeholder="Araç adı (örn. Yamaha MT-07, Civic)">
+    <div class="card-row"><input id="newVehicleName" placeholder="Araç adı (örn. Honda CB500, Civic)"></div>
+    <div style="margin-top:8px;"><label class="lbl">Renk teması</label>
+      <div class="color-opts" id="colorOpts"></div>
     </div>
-    <div id="newVehicleError" class="error-text" style="display:none;"></div>
+    <div id="newVehicleErr" class="err" style="display:none;"></div>
     <div class="card-actions">
-      <button class="ghost-btn" onclick="toggleNewVehicleForm(false)">Vazgeç</button>
+      <button class="ghost-btn" onclick="toggleNewVehicle(false)">Vazgeç</button>
       <button class="primary-btn" onclick="createVehicle()">Ekle</button>
     </div>
   </div>
 
-  <div id="noVehicleState" class="empty" style="display:none;">
-    Henüz bir araç eklemedin. Yukarıdaki "+ Araç ekle" ile başla.
-  </div>
-
-  <div id="vehicleContent" style="display:none;">
-    <div class="tab-buttons" id="tabButtons">
-      <button class="tab-btn active" onclick="switchTab('maintenance')">Bakım</button>
-      <button class="tab-btn" onclick="switchTab('fuel')">Yakıt</button>
-      <button class="tab-btn" onclick="switchTab('service')">Muayene/Sigorta</button>
-    </div>
-
-    <!-- BAKIM SEKMESI -->
-    <div id="maintenanceTab" style="display:block;">
-      <div class="card">
-        <div class="km-row" id="kmRowDisplay">
-          <div>
-            <div class="km-label">Güncel Kilometre</div>
-            <div class="km-value" id="kmDisplay">0 km</div>
-          </div>
-          <button class="km-edit-btn" onclick="startEditKm()">Güncelle</button>
-        </div>
-        <div class="km-row" id="kmRowEdit" style="display:none;">
-          <input id="kmEditInput" type="number" placeholder="Yeni kilometre" style="max-width:160px;">
-          <div style="display:flex;gap:8px;">
-            <button class="ghost-btn" onclick="cancelEditKm()">Vazgeç</button>
-            <button class="primary-btn-small" onclick="saveKm()">Kaydet</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="alertsSection"></div>
-
-      <div class="total-bar">
-        <span class="total-label">Toplam Bakım Masrafı</span>
-        <span class="total-value" id="totalCost">₺0</span>
-      </div>
-
-      <div class="total-bar" style="margin-bottom:16px;">
-        <span class="total-label">Km Başına Maliyet</span>
-        <span class="total-value" id="costPerKm">₺0</span>
-      </div>
-
-      <div class="filter-row" id="filterRow">
-        <button class="filter-btn clear" onclick="clearFilters()">Tüm türler</button>
-      </div>
-
-      <div class="section-head">
-        <span class="section-title">Bakım Geçmişi</span>
-        <button class="icon-btn" onclick="toggleNewRecordForm(true)">+ Bakım ekle</button>
-      </div>
-
-      <div id="newRecordForm" class="card" style="display:none;">
-        <div class="card-row">
-          <div class="field">
-            <label class="field-label">Bakım türü</label>
-            <input id="recType" list="typeSuggestions" placeholder="örn. Yağ değişimi">
-            <datalist id="typeSuggestions">
-              <option value="Yağ değişimi">
-              <option value="Ön Lastik Değişimi">
-              <option value="Arka Lastik Değişimi">
-              <option value="Ön Fren Balatası">
-              <option value="Arka Fren Balatası">
-              <option value="Zincir/dişli">
-              <option value="Tahrik Seti">
-              <option value="Varyatör Temizliği">
-              <option value="Akü">
-              <option value="Filtre değişimi">
-              <option value="Genel bakım">
-            </datalist>
-          </div>
-          <div class="field">
-            <label class="field-label">Tarih</label>
-            <input id="recDate" type="date">
-          </div>
-        </div>
-        <div class="card-row" style="margin-top:10px;">
-          <div class="field">
-            <label class="field-label">Kilometre</label>
-            <input id="recKm" type="number" placeholder="örn. 15000">
-          </div>
-          <div class="field">
-            <label class="field-label">Tutar ₺</label>
-            <input id="recCost" type="number" placeholder="örn. 850">
-          </div>
-        </div>
-        <div class="card-row" style="margin-top:10px;">
-          <div class="field">
-            <label class="field-label">Sonraki bakım (km) — opsiyonel</label>
-            <input id="recNextKm" type="number" placeholder="örn. 25000">
-          </div>
-          <div class="field">
-            <label class="field-label">Sonraki bakım (tarih) — opsiyonel</label>
-            <input id="recNextDate" type="date">
-          </div>
-        </div>
-        <div class="card-row" style="margin-top:10px;">
-          <div class="field">
-            <label class="field-label">Fatura/fiş fotoğrafı — opsiyonel</label>
-            <input id="recPhoto" type="file" accept="image/*">
-          </div>
-        </div>
-        <div class="card-row" style="margin-top:10px;">
-          <textarea id="recNote" placeholder="Not (opsiyonel)"></textarea>
-        </div>
-        <div id="newRecordError" class="error-text" style="display:none;"></div>
-        <div class="card-actions">
-          <button class="ghost-btn" onclick="toggleNewRecordForm(false)">Vazgeç</button>
-          <button class="primary-btn" onclick="createRecord()">Kaydet</button>
-        </div>
-      </div>
-
-      <div id="recordEmpty" class="empty" style="display:none;">
-        Henüz bir bakım kaydı yok. "+ Bakım ekle" ile ilk kaydını oluştur.
-      </div>
-
-      <div id="recordList"></div>
-    </div>
-
-    <!-- YAKIT SEKMESI -->
-    <div id="fuelTab" style="display:none;">
-      <div class="total-bar">
-        <span class="total-label">Toplam Yakıt Harcaması</span>
-        <span class="total-value" id="totalFuel">₺0</span>
-      </div>
-
-      <div class="total-bar" style="margin-bottom:16px;">
-        <span class="total-label">Ort. Tüketim</span>
-        <span class="total-value" id="fuelEconomy">-</span>
-      </div>
-
-      <div class="section-head">
-        <span class="section-title">Yakıt Kayıtları</span>
-        <button class="icon-btn" onclick="toggleNewFuelForm(true)">+ Yakıt ekle</button>
-      </div>
-
-      <div id="newFuelForm" class="card" style="display:none;">
-        <div class="card-row">
-          <div class="field">
-            <label class="field-label">Kilometre</label>
-            <input id="fuelKm" type="number" placeholder="örn. 15000">
-          </div>
-          <div class="field">
-            <label class="field-label">Litre</label>
-            <input id="fuelLiters" type="number" step="0.1" placeholder="örn. 12.5">
-          </div>
-        </div>
-        <div class="card-row" style="margin-top:10px;">
-          <div class="field">
-            <label class="field-label">Tutar ₺</label>
-            <input id="fuelCost" type="number" placeholder="örn. 960">
-          </div>
-          <div class="field">
-            <label class="field-label">Tarih</label>
-            <input id="fuelDate" type="date">
-          </div>
-        </div>
-        <div id="newFuelError" class="error-text" style="display:none;"></div>
-        <div class="card-actions">
-          <button class="ghost-btn" onclick="toggleNewFuelForm(false)">Vazgeç</button>
-          <button class="primary-btn" onclick="createFuelRecord()">Kaydet</button>
-        </div>
-      </div>
-
-      <div id="fuelEmpty" class="empty" style="display:none;">
-        Henüz bir yakıt kaydı yok. "+ Yakıt ekle" ile başla.
-      </div>
-
-      <div id="fuelList"></div>
-    </div>
-
-    <!-- MUAYENE/SİGORTA SEKMESI -->
-    <div id="serviceTab" style="display:none;">
-      <div class="section-head">
-        <span class="section-title">Muayene & Sigorta</span>
-        <button class="icon-btn" onclick="toggleNewServiceForm(true)">+ Tarih ekle</button>
-      </div>
-
-      <div id="newServiceForm" class="card" style="display:none;">
-        <div class="card-row">
-          <div class="field">
-            <label class="field-label">Türü (örn. Muayene, Sigorta, KGY)</label>
-            <input id="serviceName" placeholder="Muayene">
-          </div>
-          <div class="field">
-            <label class="field-label">Sona Erme Tarihi</label>
-            <input id="serviceDate" type="date">
-          </div>
-        </div>
-        <div id="newServiceError" class="error-text" style="display:none;"></div>
-        <div class="card-actions">
-          <button class="ghost-btn" onclick="toggleNewServiceForm(false)">Vazgeç</button>
-          <button class="primary-btn" onclick="createServiceRecord()">Kaydet</button>
-        </div>
-      </div>
-
-      <div id="serviceEmpty" class="empty" style="display:none;">
-        Henüz bir tarih kaydı yok. "+ Tarih ekle" ile başla.
-      </div>
-
-      <div id="serviceList"></div>
-    </div>
-  </div>
+  <div id="noVehicle" class="empty" style="display:none;">Henüz araç eklemedin.<br><b>+ Araç ekle</b> ile başla.</div>
+  <div id="vehicleContent" style="display:none;"></div>
 </div>
 
-<!-- YEDEKLEME MODAL -->
-<div id="backupModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeBackupModal()">✕</button>
-    <h2 style="margin-top:0;color:var(--paper);">Yedekle / Geri Yükle</h2>
-    <p style="color:var(--muted);font-size:14px;">Tüm araç ve bakım verilerini yedekleyip telefonunu değiştirdiğinde geri yükleyebilirsin.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="primary-btn" style="width:100%;text-align:center;" onclick="exportData()">📥 Verileri İndir (JSON)</button>
-      <button class="primary-btn" style="width:100%;text-align:center;" onclick="document.getElementById('importFile').click()">📤 Verileri Yükle</button>
+<!-- ALT NAV -->
+<nav class="bottom-nav" id="bottomNav"></nav>
+
+<!-- AYARLAR -->
+<div id="settingsModal" class="modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2 style="font-family:'Newsreader',serif;margin-bottom:16px;">Ayarlar</h2>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="stat-label">SEÇİLİ ARAÇ</div>
+      <div id="settingsVehicleName" style="font-size:16px;font-weight:600;margin:8px 0 12px;"></div>
+      <label class="lbl">Araç fotoğrafı</label>
+      <input type="file" id="coverPhotoInput" accept="image/*" onchange="saveCoverPhoto(event)" style="margin-bottom:8px;">
+      <button class="danger-btn" onclick="deleteVehicleConfirm()">🗑️ Bu Aracı Sil</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="testSpeech()">🔊 Sesi Test Et</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportData()">📥 Verileri İndir (JSON)</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportCSV()">📊 CSV İndir (Excel)</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="document.getElementById('importFile').click()">📤 Geri Yükle</button>
       <input id="importFile" type="file" accept=".json" style="display:none;" onchange="importData(event)">
     </div>
   </div>
 </div>
 
 <script>
-const STORAGE_KEY = "aracarim-v2";
-let vehicles = [];
-let activeVehicleId = null;
-let activeTab = "maintenance";
-let maintenanceFilter = null;
+const SK="aracarim-v6";
+const ACCENT_COLORS=["#E8873A","#5B8FD4","#7FA97F","#C1785A","#A97BC1","#D4A85B","#5BC1BA"];
+const ACCENT_NAMES=["Turuncu","Mavi","Yeşil","Pas","Mor","Altın","Teal"];
+let vehicles=[],activeId=null,activeTab="bakım",mFilter=null,newVehicleColor=ACCENT_COLORS[0];
 
-function uid(){ return Math.random().toString(36).slice(2,10); }
+const uid=()=>Math.random().toString(36).slice(2,10);
+const fmtTL=n=>new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:0}).format(n||0);
+const fmtDate=iso=>{if(!iso)return"";return new Date(iso+"T00:00:00").toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});};
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML;};
+const getV=()=>vehicles.find(v=>v.id===activeId);
+const setAccent=c=>{document.documentElement.style.setProperty("--accent",c);};
 
 function load(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const data = raw ? JSON.parse(raw) : { vehicles: [], activeVehicleId: null };
-    vehicles = data.vehicles || [];
-    activeVehicleId = data.activeVehicleId || (vehicles[0] ? vehicles[0].id : null);
-  }catch(e){ vehicles = []; activeVehicleId = null; }
+  try{const r=localStorage.getItem(SK);const d=r?JSON.parse(r):{};vehicles=d.vehicles||[];activeId=d.activeId||(vehicles[0]?vehicles[0].id:null);}
+  catch(e){vehicles=[];activeId=null;}
+}
+function save(){try{localStorage.setItem(SK,JSON.stringify({vehicles,activeId}));}catch(e){}}
+
+// SPLASH
+setTimeout(()=>{
+  const s=document.getElementById("splash");
+  s.classList.add("hide");
+  setTimeout(()=>s.style.display="none",500);
+},1800);
+
+// RENK SEÇİCİ
+function initColorPicker(){
+  document.getElementById("colorOpts").innerHTML=ACCENT_COLORS.map((c,i)=>`
+    <div class="color-opt ${c===newVehicleColor?'selected':''}" style="background:${c};" onclick="selectNewVehicleColor('${c}',this)" title="${ACCENT_NAMES[i]}"></div>`).join("");
+}
+function selectNewVehicleColor(c,el){
+  newVehicleColor=c;
+  document.querySelectorAll(".color-opt").forEach(e=>e.classList.remove("selected"));
+  el.classList.add("selected");
 }
 
-function save(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ vehicles, activeVehicleId })); }
-  catch(e){ console.error("Kaydedilemedi:", e); }
+// ARAÇ
+function toggleNewVehicle(show){
+  document.getElementById("newVehicleForm").style.display=show?"block":"none";
+  if(show){newVehicleColor=ACCENT_COLORS[0];initColorPicker();}
+  else document.getElementById("newVehicleName").value="";
 }
-
-function formatTL(n){
-  return new Intl.NumberFormat("tr-TR", { style:"currency", currency:"TRY", maximumFractionDigits:0 }).format(n||0);
-}
-
-function formatDate(iso){
-  if(!iso) return "";
-  return new Date(iso+"T00:00:00").toLocaleDateString("tr-TR",{ day:"2-digit", month:"long", year:"numeric" });
-}
-
-function todayISO(){
-  const d = new Date();
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-}
-
-function toggleNewVehicleForm(show){
-  document.getElementById("newVehicleForm").style.display = show ? "block" : "none";
-  document.getElementById("newVehicleError").style.display = "none";
-  if(!show) document.getElementById("newVehicleName").value = "";
-}
-
 function createVehicle(){
-  const name = document.getElementById("newVehicleName").value.trim();
-  const errEl = document.getElementById("newVehicleError");
-  if(!name){ errEl.textContent = "Bir isim gir."; errEl.style.display = "block"; return; }
-  const v = { 
-    id: uid(), name, currentKm: 0, 
-    records: [], fuelRecords: [], serviceRecords: [] 
-  };
-  vehicles.push(v);
-  activeVehicleId = v.id;
-  save();
-  toggleNewVehicleForm(false);
-  render();
+  const name=document.getElementById("newVehicleName").value.trim();
+  const err=document.getElementById("newVehicleErr");
+  if(!name){err.textContent="Araç adı gir.";err.style.display="block";return;}
+  const v={id:uid(),name,color:newVehicleColor,currentKm:0,purchasePrice:0,plate:"",brand:"",model:"",year:"",coverPhoto:null,
+    records:[],fuelRecords:[],serviceRecords:[],contacts:[],hasarRecords:[],repeatRules:[]};
+  vehicles.push(v);activeId=v.id;save();toggleNewVehicle(false);render();
 }
-
 function selectVehicle(id){
-  activeVehicleId = id;
-  save();
-  render();
+  activeId=id;
+  const v=vehicles.find(x=>x.id===id);
+  if(v&&v.color)setAccent(v.color);
+  save();render();
+}
+function deleteVehicleConfirm(){
+  const v=getV();if(!v)return;
+  if(!confirm("'"+v.name+"' aracını silmek istediğine emin misin?"))return;
+  vehicles=vehicles.filter(x=>x.id!==v.id);
+  activeId=vehicles[0]?vehicles[0].id:null;
+  save();closeSettings();location.reload();
+}
+function saveCoverPhoto(e){
+  const v=getV();if(!v)return;
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{v.coverPhoto=ev.target.result;save();render();};
+  reader.readAsDataURL(file);
 }
 
-function getActiveVehicle(){
-  return vehicles.find(v => v.id === activeVehicleId);
+// ALT NAV
+const TABS=[
+  {id:"bakım",icon:"🔧",label:"Bakım"},
+  {id:"yakıt",icon:"⛽",label:"Yakıt"},
+  {id:"muayene",icon:"📋",label:"Muayene"},
+  {id:"hasar",icon:"💥",label:"Hasar"},
+  {id:"rapor",icon:"📊",label:"Rapor"},
+  {id:"takvim",icon:"📅",label:"Takvim"},
+  {id:"servis",icon:"📞",label:"Servisler"},
+  {id:"profil",icon:"🚗",label:"Profil"},
+  {id:"maliyet",icon:"💰",label:"Maliyet"},
+  {id:"yillik",icon:"📈",label:"Yıllık"},
+];
+function renderBottomNav(){
+  document.getElementById("bottomNav").innerHTML=TABS.map(t=>`
+    <button class="bnav-btn ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">
+      <span class="bnav-icon">${t.icon}</span>
+      <span>${t.label}</span>
+    </button>`).join("");
 }
-
 function switchTab(tab){
-  activeTab = tab;
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  event.target.classList.add("active");
-  document.querySelectorAll("[id$='Tab']").forEach(t => t.style.display = "none");
-  document.getElementById(tab + "Tab").style.display = "block";
-  if(tab === "maintenance") renderMaintenance();
-  else if(tab === "fuel") renderFuel();
-  else if(tab === "service") renderService();
+  activeTab=tab;renderBottomNav();renderContent();
 }
 
-// KM EDIT
-function startEditKm(){
-  const v = getActiveVehicle();
-  if(!v) return;
-  document.getElementById("kmRowDisplay").style.display = "none";
-  document.getElementById("kmRowEdit").style.display = "flex";
-  const input = document.getElementById("kmEditInput");
-  input.value = v.currentKm || 0;
-  input.focus();
-}
+// KM
+function startKmEdit(){const v=getV();if(!v)return;document.getElementById("kmDisplay").style.display="none";document.getElementById("kmEdit").style.display="flex";document.getElementById("kmInput").value=v.currentKm||0;document.getElementById("kmInput").focus();}
+function cancelKmEdit(){document.getElementById("kmDisplay").style.display="flex";document.getElementById("kmEdit").style.display="none";}
+function saveKm(){const v=getV();if(!v)return;const n=parseFloat(document.getElementById("kmInput").value);if(isNaN(n)||n<0){alert("Geçerli km gir.");return;}v.currentKm=n;save();cancelKmEdit();renderContent();}
 
-function cancelEditKm(){
-  document.getElementById("kmRowDisplay").style.display = "flex";
-  document.getElementById("kmRowEdit").style.display = "none";
-}
-
-function saveKm(){
-  const v = getActiveVehicle();
-  if(!v) return;
-  const num = parseFloat(document.getElementById("kmEditInput").value);
-  if(isNaN(num) || num < 0){ alert("Geçerli bir sayı gir."); return; }
-  v.currentKm = num;
-  save();
-  cancelEditKm();
-  render();
-}
-
-// BAKIP SEKMESI
-function toggleNewRecordForm(show){
-  document.getElementById("newRecordForm").style.display = show ? "block" : "none";
-  document.getElementById("newRecordError").style.display = "none";
-  if(show){
-    document.getElementById("recDate").value = todayISO();
-  } else {
-    ["recType","recDate","recKm","recCost","recNextKm","recNextDate","recNote","recPhoto"].forEach(id => {
-      if(document.getElementById(id)) document.getElementById(id).value = "";
-    });
-  }
-}
-
-function createRecord(){
-  const v = getActiveVehicle();
-  if(!v) return;
-  const type = document.getElementById("recType").value.trim();
-  const date = document.getElementById("recDate").value;
-  const km = parseFloat(document.getElementById("recKm").value);
-  const cost = parseFloat(document.getElementById("recCost").value) || 0;
-  const nextKm = document.getElementById("recNextKm").value ? parseFloat(document.getElementById("recNextKm").value) : null;
-  const nextDate = document.getElementById("recNextDate").value || null;
-  const note = document.getElementById("recNote").value.trim();
-  const photoFile = document.getElementById("recPhoto").files[0];
-  const errEl = document.getElementById("newRecordError");
-
-  if(!type){ errEl.textContent = "Bakım türü gir."; errEl.style.display = "block"; return; }
-  if(!date){ errEl.textContent = "Tarih seç."; errEl.style.display = "block"; return; }
-  if(isNaN(km) || km < 0){ errEl.textContent = "Geçerli bir kilometre gir."; errEl.style.display = "block"; return; }
-
-  const rec = { id: uid(), type, date, km, cost, nextKm, nextDate, note, photo: null };
-  
-  if(photoFile){
-    const reader = new FileReader();
-    reader.onload = function(e){
-      rec.photo = e.target.result;
-      v.records.unshift(rec);
-      v.records.sort((a,b) => new Date(b.date) - new Date(a.date));
-      if(km > (v.currentKm || 0)) v.currentKm = km;
-      save();
-      toggleNewRecordForm(false);
-      renderMaintenance();
-    };
-    reader.readAsDataURL(photoFile);
-  } else {
-    v.records.unshift(rec);
-    v.records.sort((a,b) => new Date(b.date) - new Date(a.date));
-    if(km > (v.currentKm || 0)) v.currentKm = km;
-    save();
-    toggleNewRecordForm(false);
-    renderMaintenance();
-  }
-}
-
-function deleteRecord(id){
-  const v = getActiveVehicle();
-  if(!v) return;
-  v.records = v.records.filter(r => r.id !== id);
-  save();
-  renderMaintenance();
-}
-
-// YAKIT SEKMESI
-function toggleNewFuelForm(show){
-  document.getElementById("newFuelForm").style.display = show ? "block" : "none";
-  document.getElementById("newFuelError").style.display = "none";
-  if(show){
-    document.getElementById("fuelDate").value = todayISO();
-  } else {
-    ["fuelKm","fuelLiters","fuelCost","fuelDate"].forEach(id => document.getElementById(id).value = "");
-  }
-}
-
-function createFuelRecord(){
-  const v = getActiveVehicle();
-  if(!v) return;
-  const km = parseFloat(document.getElementById("fuelKm").value);
-  const liters = parseFloat(document.getElementById("fuelLiters").value);
-  const cost = parseFloat(document.getElementById("fuelCost").value);
-  const date = document.getElementById("fuelDate").value;
-  const errEl = document.getElementById("newFuelError");
-
-  if(isNaN(km) || km < 0){ errEl.textContent = "Geçerli bir kilometre gir."; errEl.style.display = "block"; return; }
-  if(isNaN(liters) || liters <= 0){ errEl.textContent = "Geçerli bir litre gir."; errEl.style.display = "block"; return; }
-  if(isNaN(cost) || cost <= 0){ errEl.textContent = "Geçerli bir tutar gir."; errEl.style.display = "block"; return; }
-  if(!date){ errEl.textContent = "Tarih seç."; errEl.style.display = "block"; return; }
-
-  if(!v.fuelRecords) v.fuelRecords = [];
-  v.fuelRecords.unshift({ id: uid(), km, liters, cost, date });
-  v.fuelRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
-  if(km > (v.currentKm || 0)) v.currentKm = km;
-  save();
-  toggleNewFuelForm(false);
-  renderFuel();
-}
-
-function deleteFuelRecord(id){
-  const v = getActiveVehicle();
-  if(!v) return;
-  v.fuelRecords = v.fuelRecords.filter(r => r.id !== id);
-  save();
-  renderFuel();
-}
-
-// MUAYENE/SİGORTA SEKMESI
-function toggleNewServiceForm(show){
-  document.getElementById("newServiceForm").style.display = show ? "block" : "none";
-  document.getElementById("newServiceError").style.display = "none";
-  if(!show) {
-    document.getElementById("serviceName").value = "";
-    document.getElementById("serviceDate").value = "";
-  }
-}
-
-function createServiceRecord(){
-  const v = getActiveVehicle();
-  if(!v) return;
-  const name = document.getElementById("serviceName").value.trim();
-  const date = document.getElementById("serviceDate").value;
-  const errEl = document.getElementById("newServiceError");
-
-  if(!name){ errEl.textContent = "Bir adı gir."; errEl.style.display = "block"; return; }
-  if(!date){ errEl.textContent = "Tarih seç."; errEl.style.display = "block"; return; }
-
-  if(!v.serviceRecords) v.serviceRecords = [];
-  v.serviceRecords.unshift({ id: uid(), name, date });
-  v.serviceRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
-  save();
-  toggleNewServiceForm(false);
-  renderService();
-}
-
-function deleteServiceRecord(id){
-  const v = getActiveVehicle();
-  if(!v) return;
-  v.serviceRecords = v.serviceRecords.filter(r => r.id !== id);
-  save();
-  renderService();
-}
-
-// FILTER
-function setTypeFilter(type){
-  maintenanceFilter = maintenanceFilter === type ? null : type;
-  renderMaintenance();
-}
-
-function clearFilters(){
-  maintenanceFilter = null;
-  renderMaintenance();
-}
-
-// BACKUP/RESTORE
-function openBackupModal(){
-  document.getElementById("backupModal").classList.add("open");
-}
-
-function closeBackupModal(){
-  document.getElementById("backupModal").classList.remove("open");
-}
-
-function exportData(){
-  const data = { vehicles, version: "2" };
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "aracarim-yedek-" + new Date().toISOString().slice(0,10) + ".json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    try{
-      const data = JSON.parse(e.target.result);
-      vehicles = data.vehicles || [];
-      activeVehicleId = vehicles[0] ? vehicles[0].id : null;
-      save();
-      closeBackupModal();
-      render();
-      alert("Veriler başarıyla yüklendi!");
-    }catch(err){
-      alert("Dosya hatalı: " + err.message);
-    }
-  };
-  reader.readAsText(file);
-}
-
-function escapeHtml(str){
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
+// UYARILAR
 function computeAlerts(v){
-  const alerts = [];
-  const today = new Date();
-  v.records.forEach(r => {
-    if(r.nextKm){
-      const remaining = r.nextKm - (v.currentKm || 0);
-      if(remaining <= 0){
-        alerts.push({ overdue:true, text: r.type + " zamanı geçti", sub: r.nextKm.toLocaleString("tr-TR") + " km'de öngörülmüştü, şu an " + (v.currentKm||0).toLocaleString("tr-TR") + " km'desin" });
-      } else if(remaining <= 1000){
-        alerts.push({ overdue:false, text: r.type + " yaklaşıyor", sub: remaining.toLocaleString("tr-TR") + " km kaldı" });
-      }
+  const alerts=[];const now=new Date();now.setHours(0,0,0,0);
+  const diff=iso=>Math.floor((new Date(iso+"T00:00:00")-now)/86400000);
+  v.records.forEach(r=>{
+    if(r.nextKm){const rem=r.nextKm-(v.currentKm||0);
+      if(rem<=0)alerts.push({type:"red",text:r.type+" zamanı geçti",sub:(v.currentKm||0).toLocaleString("tr-TR")+" km'desin",badge:"GEÇTİ",p:0});
+      else if(rem<=1000)alerts.push({type:"orange",text:r.type+" yaklaşıyor",sub:rem.toLocaleString("tr-TR")+" km kaldı",badge:"YAKLAŞIYOR",p:2});
     }
-    if(r.nextDate){
-      const nd = new Date(r.nextDate+"T00:00:00");
-      const diffDays = Math.ceil((nd - today) / 86400000);
-      if(diffDays <= 0){
-        alerts.push({ overdue:true, text: r.type + " tarihi geçti", sub: formatDate(r.nextDate) + " için planlanmıştı" });
-      } else if(diffDays <= 14){
-        alerts.push({ overdue:false, text: r.type + " yaklaşıyor", sub: diffDays + " gün kaldı (" + formatDate(r.nextDate) + ")" });
-      }
+    if(r.nextDate){const d=diff(r.nextDate);
+      if(d<0)alerts.push({type:"red",text:r.type+" tarihi geçti",sub:fmtDate(r.nextDate),badge:"GEÇTİ",p:0});
+      else if(d===0)alerts.push({type:"red",text:"⚠️ "+r.type+" BUGÜN SON GÜN!",sub:fmtDate(r.nextDate),badge:"BUGÜN",p:0});
+      else if(d<=5)alerts.push({type:"red",text:"🔴 "+r.type+" — "+d+" gün kaldı",sub:fmtDate(r.nextDate),badge:d+"GÜN",p:1});
+      else if(d<=15)alerts.push({type:"orange",text:"🟠 "+r.type+" — "+d+" gün kaldı",sub:fmtDate(r.nextDate),badge:d+"GÜN",p:2});
+      else if(d<=30)alerts.push({type:"yellow",text:"🟡 "+r.type+" — "+d+" gün kaldı",sub:fmtDate(r.nextDate),badge:d+"GÜN",p:3});
     }
   });
-
-  if(v.serviceRecords){
-    v.serviceRecords.forEach(s => {
-      const nd = new Date(s.date+"T00:00:00");
-      const diffDays = Math.ceil((nd - today) / 86400000);
-      if(diffDays <= 0){
-        alerts.push({ overdue:true, text: s.name + " tarihi geçti", sub: formatDate(s.date) });
-      } else if(diffDays <= 30){
-        alerts.push({ overdue:false, text: s.name + " yaklaşıyor", sub: diffDays + " gün kaldı" });
-      }
-    });
-  }
-
-  return alerts;
+  (v.serviceRecords||[]).forEach(s=>{const d=diff(s.date);
+    if(d<0)alerts.push({type:"red",text:s.name+" tarihi geçti",sub:fmtDate(s.date),badge:"GEÇTİ",p:0});
+    else if(d===0)alerts.push({type:"red",text:"⚠️ "+s.name+" BUGÜN SON GÜN!",sub:fmtDate(s.date),badge:"BUGÜN",p:0});
+    else if(d<=5)alerts.push({type:"red",text:"🔴 "+s.name+" — "+d+" gün kaldı",sub:fmtDate(s.date),badge:d+"GÜN",p:1});
+    else if(d<=15)alerts.push({type:"orange",text:"🟠 "+s.name+" — "+d+" gün kaldı",sub:fmtDate(s.date),badge:d+"GÜN",p:2});
+    else if(d<=30)alerts.push({type:"yellow",text:"🟡 "+s.name+" — "+d+" gün kaldı",sub:fmtDate(s.date),badge:d+"GÜN",p:3});
+  });
+  alerts.sort((a,b)=>a.p-b.p);return alerts;
 }
 
-function renderMaintenance(){
-  const v = getActiveVehicle();
-  if(!v) return;
+// TEKRARLAYAN BAKIM
+function applyRepeatRules(v){
+  if(!v.repeatRules||v.repeatRules.length===0)return;
+  v.repeatRules.forEach(rule=>{
+    const last=v.records.filter(r=>r.type===rule.type).sort((a,b)=>b.km-a.km)[0];
+    if(last){last.nextKm=(last.km||0)+rule.intervalKm;}
+  });
+}
 
-  document.getElementById("kmDisplay").textContent = (v.currentKm || 0).toLocaleString("tr-TR") + " km";
-
-  const totalCost = v.records.reduce((s,r) => s + (r.cost||0), 0);
-  document.getElementById("totalCost").textContent = formatTL(totalCost);
-
-  const costPerKm = v.currentKm > 0 ? totalCost / v.currentKm : 0;
-  document.getElementById("costPerKm").textContent = (costPerKm).toFixed(2) + " ₺/km";
-
-  const alerts = computeAlerts(v);
-  const alertsSection = document.getElementById("alertsSection");
-  if(alerts.length === 0){
-    alertsSection.innerHTML = "";
-  } else {
-    alertsSection.innerHTML = alerts.map(a => `
-      <div class="alert-item ${a.overdue ? '' : 'upcoming'}">
-        <div>
-          <div class="alert-title">${escapeHtml(a.text)}</div>
-          <div class="alert-sub">${escapeHtml(a.sub)}</div>
-        </div>
-        <span class="alert-tag ${a.overdue ? 'overdue' : 'upcoming'}">${a.overdue ? 'GEÇTİ' : 'YAKLAŞIYOR'}</span>
+// BAKIIM
+function tabBakim(v){
+  const searchQ=(document.getElementById("srch")||{}).value||"";
+  const filtered=(mFilter?v.records.filter(r=>r.type===mFilter):v.records)
+    .filter(r=>!searchQ||r.type.toLowerCase().includes(searchQ.toLowerCase())||(r.note||"").toLowerCase().includes(searchQ.toLowerCase()));
+  const total=v.records.reduce((s,r)=>s+(r.cost||0),0);
+  const cpk=v.currentKm>0?(total/v.currentKm).toFixed(2)+" ₺/km":"—";
+  const alerts=computeAlerts(v);
+  const types=[...new Set(v.records.map(r=>r.type))];
+  return`
+    <div class="card">
+      <div class="km-row" id="kmDisplay">
+        <div><div class="km-lbl">Güncel Kilometre</div><div class="km-val">${(v.currentKm||0).toLocaleString("tr-TR")} km</div></div>
+        <button class="km-btn" onclick="startKmEdit()">Güncelle</button>
       </div>
-    `).join("");
-  }
-
-  const types = [...new Set(v.records.map(r => r.type))];
-  const filterRow = document.getElementById("filterRow");
-  filterRow.innerHTML = '<button class="filter-btn clear" onclick="clearFilters()">Tüm türler</button>' +
-    types.map(t => `<button class="filter-btn ${maintenanceFilter === t ? 'active' : ''}" onclick="setTypeFilter('${t}')">${escapeHtml(t)}</button>`).join("");
-
-  const filtered = maintenanceFilter ? v.records.filter(r => r.type === maintenanceFilter) : v.records;
-  const list = document.getElementById("recordList");
-  document.getElementById("recordEmpty").style.display = filtered.length === 0 ? "block" : "none";
-  list.innerHTML = filtered.map(r => `
-    <div class="record-card">
-      <div class="record-top">
-        <div>
-          <div class="record-type">${escapeHtml(r.type)}</div>
-          <div class="record-meta">${formatDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="record-cost">${formatTL(r.cost)}</div>
-          <button class="trash-btn" onclick="deleteRecord('${r.id}')">✕</button>
-        </div>
+      <div class="km-row" id="kmEdit" style="display:none;">
+        <input id="kmInput" type="number" placeholder="Yeni km" style="max-width:160px;">
+        <div style="display:flex;gap:8px;"><button class="ghost-btn" onclick="cancelKmEdit()">Vazgeç</button><button class="primary-btn-sm" onclick="saveKm()">Kaydet</button></div>
       </div>
-      ${r.photo ? `<img src="${r.photo}" class="record-photo">` : ""}
-      ${(r.nextKm || r.nextDate) ? `<div class="record-next">Sonraki: ${r.nextKm ? r.nextKm.toLocaleString("tr-TR") + ' km' : ''}${r.nextKm && r.nextDate ? ' / ' : ''}${r.nextDate ? formatDate(r.nextDate) : ''}</div>` : ""}
-      ${r.note ? `<div class="record-note">${escapeHtml(r.note)}</div>` : ""}
     </div>
-  `).join("");
-}
-
-function renderFuel(){
-  const v = getActiveVehicle();
-  if(!v) return;
-
-  if(!v.fuelRecords) v.fuelRecords = [];
-  const totalFuel = v.fuelRecords.reduce((s,r) => s + (r.cost||0), 0);
-  document.getElementById("totalFuel").textContent = formatTL(totalFuel);
-
-  let fuelEconomyText = "-";
-  if(v.fuelRecords.length >= 2){
-    const sorted = [...v.fuelRecords].sort((a,b) => a.km - b.km);
-    const kmDiff = sorted[sorted.length-1].km - sorted[0].km;
-    const litersDiff = sorted.reduce((s,r) => s + r.liters, 0) - sorted[0].liters;
-    if(kmDiff > 0 && litersDiff > 0){
-      const economy = kmDiff / litersDiff;
-      fuelEconomyText = economy.toFixed(2) + " km/lt";
-    }
-  }
-  document.getElementById("fuelEconomy").textContent = fuelEconomyText;
-
-  const list = document.getElementById("fuelList");
-  document.getElementById("fuelEmpty").style.display = v.fuelRecords.length === 0 ? "block" : "none";
-  list.innerHTML = v.fuelRecords.map(r => `
-    <div class="record-card">
-      <div class="record-top">
-        <div>
-          <div class="record-type">Yakıt</div>
-          <div class="record-meta">${formatDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="text-align:right;">
-            <div class="record-cost">${formatTL(r.cost)}</div>
-            <div style="font-size:12px;color:var(--muted);">${r.liters} L</div>
+    ${alerts.map(a=>`<div class="alert-box ${a.type}"><div><div class="alert-title">${esc(a.text)}</div><div class="alert-sub">${esc(a.sub)}</div></div><span class="badge ${a.p<=1?"red":"orange"}">${esc(a.badge)}</span></div>`).join("")}
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Toplam Bakım</div><div class="stat-value">${fmtTL(total)}</div></div>
+      <div class="stat-card"><div class="stat-label">Km Başına</div><div class="stat-value sage">${cpk}</div></div>
+    </div>
+    <div class="filter-row">${[{t:null,l:"Tümü"},...types.map(t=>({t,l:t}))].map(x=>`<button class="fbtn ${mFilter===x.t?'active':''}" onclick="mFilter=${x.t===null?'null':"'"+x.t+"'"};renderContent()">${esc(x.l)}</button>`).join("")}</div>
+    <div style="margin-bottom:10px;"><input id="srch" placeholder="🔍 Ara..." oninput="renderContent()" style="width:100%;"></div>
+    <div class="section-head"><span class="section-title">Bakım Geçmişi</span><button class="outline-btn" onclick="showForm('newRecordForm')">+ Ekle</button></div>
+    <div id="newRecordForm" class="card" style="display:none;">
+      <div class="card-row">
+        <div class="field"><label class="lbl">Bakım türü</label><input id="rType" list="rTypeSugg" placeholder="Yağ değişimi"><datalist id="rTypeSugg"><option value="Yağ değişimi"><option value="Ön Lastik Değişimi"><option value="Arka Lastik Değişimi"><option value="Ön Fren Balatası"><option value="Arka Fren Balatası"><option value="Zincir/dişli"><option value="Tahrik Seti"><option value="Varyatör Temizliği"><option value="Akü"><option value="Filtre değişimi"><option value="Genel bakım"></datalist></div>
+        <div class="field"><label class="lbl">Tarih</label><input id="rDate" type="date"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;">
+        <div class="field"><label class="lbl">Kilometre</label><input id="rKm" type="number" placeholder="15000"></div>
+        <div class="field"><label class="lbl">Tutar ₺</label><input id="rCost" type="number" placeholder="850"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;">
+        <div class="field"><label class="lbl">Sonraki bakım km</label><input id="rNextKm" type="number" placeholder="25000"></div>
+        <div class="field"><label class="lbl">Sonraki bakım tarihi</label><input id="rNextDate" type="date"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;">
+        <div class="field"><label class="lbl">Tekrarlayan kural (km aralığı)</label><input id="rRepeat" type="number" placeholder="5000 (boş = tekrar yok)"></div>
+        <div class="field"><label class="lbl">Fotoğraf</label><input id="rPhoto" type="file" accept="image/*"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;"><textarea id="rNote" placeholder="Not (opsiyonel)"></textarea></div>
+      <div id="newRecordErr" class="err" style="display:none;"></div>
+      <div class="card-actions"><button class="ghost-btn" onclick="hideForm('newRecordForm')">Vazgeç</button><button class="primary-btn" onclick="saveRecord()">Kaydet</button></div>
+    </div>
+    ${filtered.length===0?`<div class="empty">Bakım kaydı yok.</div>`:""}
+    ${filtered.map(r=>`
+      <div class="rcard">
+        <div class="rcard-top">
+          <div>
+            <div class="rcard-type">${esc(r.type)}</div>
+            <div class="rcard-meta">${fmtDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km</div>
+            ${v.repeatRules&&v.repeatRules.find(x=>x.type===r.type)?`<div class="repeat-badge">🔄 Her ${v.repeatRules.find(x=>x.type===r.type).intervalKm.toLocaleString("tr-TR")} km</div>`:""}
           </div>
-          <button class="trash-btn" onclick="deleteFuelRecord('${r.id}')">✕</button>
+          <div style="display:flex;align-items:center;gap:8px;"><div class="rcard-cost">${fmtTL(r.cost)}</div><button class="del-btn" onclick="delRecord('${r.id}')">✕</button></div>
         </div>
-      </div>
-    </div>
-  `).join("");
+        ${r.photo?`<img src="${r.photo}" class="rcard-photo">`:""}
+        ${r.nextKm||r.nextDate?`<div class="rcard-next">Sonraki: ${r.nextKm?r.nextKm.toLocaleString("tr-TR")+" km":""}${r.nextKm&&r.nextDate?" / ":""}${r.nextDate?fmtDate(r.nextDate):""}</div>`:""}
+        ${r.note?`<div class="rcard-note">${esc(r.note)}</div>`:""}
+      </div>`).join("")}`;
 }
 
-function renderService(){
-  const v = getActiveVehicle();
-  if(!v) return;
+function saveRecord(){
+  const v=getV();if(!v)return;
+  const type=document.getElementById("rType").value.trim();
+  const date=document.getElementById("rDate").value;
+  const km=parseFloat(document.getElementById("rKm").value);
+  const cost=parseFloat(document.getElementById("rCost").value)||0;
+  const nextKm=document.getElementById("rNextKm").value?parseFloat(document.getElementById("rNextKm").value):null;
+  const nextDate=document.getElementById("rNextDate").value||null;
+  const repeatKm=document.getElementById("rRepeat").value?parseFloat(document.getElementById("rRepeat").value):null;
+  const note=document.getElementById("rNote").value.trim();
+  const photoFile=document.getElementById("rPhoto").files[0];
+  const err=document.getElementById("newRecordErr");
+  if(!type){err.textContent="Bakım türü gir.";err.style.display="block";return;}
+  if(!date){err.textContent="Tarih seç.";err.style.display="block";return;}
+  if(isNaN(km)||km<0){err.textContent="Km gir.";err.style.display="block";return;}
+  err.style.display="none";
+  // Tekrarlayan kural kaydet
+  if(!v.repeatRules)v.repeatRules=[];
+  if(repeatKm){
+    const existing=v.repeatRules.findIndex(r=>r.type===type);
+    if(existing>=0)v.repeatRules[existing].intervalKm=repeatKm;
+    else v.repeatRules.push({type,intervalKm:repeatKm});
+  }
+  // Aynı türden önceki kayıtların hedeflerini temizle
+  v.records.forEach(r=>{if(r.type===type){r.nextKm=null;r.nextDate=null;}});
+  const rec={id:uid(),type,date,km,cost,note,photo:null,
+    nextKm:nextKm||(repeatKm?km+repeatKm:null),nextDate};
+  if(photoFile){
+    const reader=new FileReader();
+    reader.onload=e=>{rec.photo=e.target.result;finishRecord(v,rec,km);};
+    reader.readAsDataURL(photoFile);
+  }else{finishRecord(v,rec,km);}
+}
+function finishRecord(v,rec,km){
+  v.records.unshift(rec);v.records.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(km>(v.currentKm||0))v.currentKm=km;
+  save();hideForm("newRecordForm");renderContent();
+}
+function delRecord(id){const v=getV();if(!v)return;v.records=v.records.filter(r=>r.id!==id);save();renderContent();}
 
-  if(!v.serviceRecords) v.serviceRecords = [];
-  const today = new Date();
-  const list = document.getElementById("serviceList");
-  document.getElementById("serviceEmpty").style.display = v.serviceRecords.length === 0 ? "block" : "none";
-  
-  list.innerHTML = v.serviceRecords.map(s => {
-    const nd = new Date(s.date+"T00:00:00");
-    const diffDays = Math.ceil((nd - today) / 86400000);
-    const status = diffDays <= 0 ? "overdue" : (diffDays <= 30 ? "upcoming" : "ok");
-    
-    return `
-      <div class="alert-item ${status === 'overdue' ? '' : status === 'upcoming' ? 'upcoming' : 'ok'}" style="background:${status === 'overdue' ? 'rgba(193,120,90,0.12)' : status === 'upcoming' ? 'rgba(232,135,58,0.1)' : 'var(--surface)'};border-color:${status === 'overdue' ? 'var(--rust)' : status === 'upcoming' ? 'var(--orange)' : 'var(--border)'};margin-bottom:10px;">
-        <div>
-          <div class="alert-title">${escapeHtml(s.name)}</div>
-          <div class="alert-sub">${formatDate(s.date)}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          ${status === 'overdue' ? `<span class="alert-tag" style="background:var(--rust);color:var(--ink);">GEÇTİ</span>` : status === 'upcoming' ? `<span class="alert-tag" style="background:var(--orange);color:var(--ink);">${diffDays} gün</span>` : ""}
-          <button class="trash-btn" onclick="deleteServiceRecord('${s.id}')">✕</button>
-        </div>
+// YAKIT
+function tabYakit(v){
+  if(!v.fuelRecords)v.fuelRecords=[];
+  const total=v.fuelRecords.reduce((s,r)=>s+(r.cost||0),0);
+  let eco="-";
+  if(v.fuelRecords.length>=2){
+    const sorted=[...v.fuelRecords].sort((a,b)=>a.km-b.km);
+    const kd=sorted[sorted.length-1].km-sorted[0].km;
+    const ld=sorted.reduce((s,r)=>s+r.liters,0)-sorted[0].liters;
+    if(kd>0&&ld>0)eco=(kd/ld).toFixed(2)+" km/lt";
+  }
+  const priceData=v.fuelRecords.filter(r=>r.liters>0).map(r=>({date:r.date,price:r.cost/r.liters})).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-8);
+  const maxP=Math.max(...priceData.map(p=>p.price),1);
+  let projHtml="";
+  if(v.fuelRecords.length>=2&&v.currentKm>0){
+    const sorted=[...v.fuelRecords].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const daysDiff=Math.max((new Date(sorted[sorted.length-1].date)-new Date(sorted[0].date))/86400000,1);
+    const kpd=(v.currentKm-sorted[0].km)/daysDiff;
+    const kpy=Math.round(kpd*365);
+    const next=v.records.filter(r=>r.nextKm).sort((a,b)=>a.nextKm-b.nextKm)[0];
+    projHtml=`<div class="card" style="margin-bottom:12px;">
+      <div class="section-title" style="margin-bottom:10px;">Km Projeksiyonu</div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-label">Günlük Ort.</div><div class="stat-value" style="font-size:18px;">${kpd.toFixed(1)} km</div></div>
+        <div class="stat-card"><div class="stat-label">Yıllık Tahmini</div><div class="stat-value" style="font-size:18px;">${kpy.toLocaleString("tr-TR")} km</div></div>
       </div>
-    `;
+      ${next?`<div style="background:var(--ink);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--muted);">Sonraki <b style="color:var(--paper);">${esc(next.type)}</b>: <b style="color:var(--accent);">${next.nextKm.toLocaleString("tr-TR")} km</b> — tahminen <b style="color:var(--sage);">${Math.max(0,Math.round((next.nextKm-v.currentKm)/kpd))} gün</b> sonra</div>`:""}
+    </div>`;
+  }
+  return`
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Toplam Yakıt</div><div class="stat-value">${fmtTL(total)}</div></div>
+      <div class="stat-card"><div class="stat-label">Ort. Tüketim</div><div class="stat-value sage">${eco}</div></div>
+    </div>
+    ${priceData.length>=2?`<div class="card" style="margin-bottom:12px;"><div class="section-title" style="margin-bottom:10px;">Litre Başına Fiyat</div><div class="chart-bar-wrap">${priceData.map(p=>{const pct=Math.round((p.price/maxP)*100);return`<div class="chart-bar-row"><div class="chart-bar-label">${p.date.slice(5)}</div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--sage);"></div></div><div class="chart-bar-val">${p.price.toFixed(1)} ₺/L</div></div>`;}).join("")}</div></div>`:""}
+    ${projHtml}
+    <div class="section-head"><span class="section-title">Yakıt Kayıtları</span><button class="outline-btn" onclick="showForm('newFuelForm')">+ Ekle</button></div>
+    <div id="newFuelForm" class="card" style="display:none;">
+      <div class="card-row">
+        <div class="field"><label class="lbl">Kilometre</label><input id="fKm" type="number" placeholder="15000"></div>
+        <div class="field"><label class="lbl">Litre</label><input id="fLiters" type="number" step="0.1" placeholder="12.5"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;">
+        <div class="field"><label class="lbl">Tutar ₺</label><input id="fCost" type="number" placeholder="960"></div>
+        <div class="field"><label class="lbl">Tarih</label><input id="fDate" type="date"></div>
+      </div>
+      <div id="newFuelErr" class="err" style="display:none;"></div>
+      <div class="card-actions"><button class="ghost-btn" onclick="hideForm('newFuelForm')">Vazgeç</button><button class="primary-btn" onclick="saveFuel()">Kaydet</button></div>
+    </div>
+    ${v.fuelRecords.length===0?`<div class="empty">Yakıt kaydı yok.</div>`:""}
+    ${v.fuelRecords.map(r=>`<div class="rcard"><div class="rcard-top"><div><div class="rcard-type">Yakıt</div><div class="rcard-meta">${fmtDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km · ${r.liters}L · ${(r.cost/r.liters).toFixed(1)} ₺/L</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="rcard-cost">${fmtTL(r.cost)}</div><button class="del-btn" onclick="delFuel('${r.id}')">✕</button></div></div></div>`).join("")}`;
+}
+function saveFuel(){
+  const v=getV();if(!v)return;
+  const km=parseFloat(document.getElementById("fKm").value);
+  const liters=parseFloat(document.getElementById("fLiters").value);
+  const cost=parseFloat(document.getElementById("fCost").value);
+  const date=document.getElementById("fDate").value;
+  const err=document.getElementById("newFuelErr");
+  if(isNaN(km)||isNaN(liters)||isNaN(cost)||!date){err.textContent="Tüm alanları doldur.";err.style.display="block";return;}
+  err.style.display="none";
+  if(!v.fuelRecords)v.fuelRecords=[];
+  v.fuelRecords.unshift({id:uid(),km,liters,cost,date});
+  v.fuelRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(km>(v.currentKm||0))v.currentKm=km;
+  save();hideForm("newFuelForm");renderContent();
+}
+function delFuel(id){const v=getV();if(!v)return;v.fuelRecords=v.fuelRecords.filter(r=>r.id!==id);save();renderContent();}
+
+// MUAYENE/SİGORTA
+function tabMuayene(v){
+  if(!v.serviceRecords)v.serviceRecords=[];
+  const now=new Date();now.setHours(0,0,0,0);
+  const widget=v.serviceRecords.slice(0,4).map(s=>{
+    const d=Math.floor((new Date(s.date+"T00:00:00")-now)/86400000);
+    const cls=d<=0?"overdue":d<=30?"warn":"ok";
+    return`<div class="sw-card ${cls}"><div class="sw-name">${esc(s.name)}</div><div class="sw-days ${cls}">${d<=0?"GEÇTİ":d}</div><div class="sw-date">${d>0?"gün kaldı":""}<br>${fmtDate(s.date)}</div></div>`;
   }).join("");
+  const list=v.serviceRecords.map(s=>{
+    const d=Math.floor((new Date(s.date+"T00:00:00")-now)/86400000);
+    let cls="yellow",badge="";
+    if(d<0){cls="red";badge=`<span class="badge red">GEÇTİ</span>`;}
+    else if(d===0){cls="red";badge=`<span class="badge red">BUGÜN</span>`;}
+    else if(d<=5){cls="red";badge=`<span class="badge red">${d} GÜN</span>`;}
+    else if(d<=30){cls="orange";badge=`<span class="badge orange">${d} GÜN</span>`;}
+    return`<div class="alert-box ${cls}"><div><div class="alert-title">${esc(s.name)}</div><div class="alert-sub">${fmtDate(s.date)}</div></div><div style="display:flex;align-items:center;gap:8px;">${badge}<button class="del-btn" onclick="delService('${s.id}')">✕</button></div></div>`;
+  }).join("");
+  return`
+    ${widget?`<div class="service-widget">${widget}</div>`:""}
+    <div class="section-head"><span class="section-title">Muayene & Sigorta</span><button class="outline-btn" onclick="showForm('newServiceForm')">+ Ekle</button></div>
+    <div id="newServiceForm" class="card" style="display:none;">
+      <div class="card-row">
+        <div class="field"><label class="lbl">Tür</label><input id="sName" list="sNameSugg" placeholder="Muayene"><datalist id="sNameSugg"><option value="Muayene"><option value="Trafik Sigortası"><option value="Kasko"><option value="KGY"></datalist></div>
+        <div class="field"><label class="lbl">Son Geçerlilik Tarihi</label><input id="sDate" type="date"></div>
+      </div>
+      <div id="newServiceErr" class="err" style="display:none;"></div>
+      <div class="card-actions"><button class="ghost-btn" onclick="hideForm('newServiceForm')">Vazgeç</button><button class="primary-btn" onclick="saveService()">Kaydet</button></div>
+    </div>
+    ${v.serviceRecords.length===0?`<div class="empty">Kayıt yok.</div>`:list}`;
+}
+function saveService(){
+  const v=getV();if(!v)return;
+  const name=document.getElementById("sName").value.trim();
+  const date=document.getElementById("sDate").value;
+  const err=document.getElementById("newServiceErr");
+  if(!name||!date){err.textContent="Tüm alanları doldur.";err.style.display="block";return;}
+  err.style.display="none";
+  if(!v.serviceRecords)v.serviceRecords=[];
+  v.serviceRecords.unshift({id:uid(),name,date});
+  v.serviceRecords.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  save();hideForm("newServiceForm");renderContent();
+}
+function delService(id){const v=getV();if(!v)return;v.serviceRecords=v.serviceRecords.filter(r=>r.id!==id);save();renderContent();}
+
+// HASAR
+function tabHasar(v){
+  if(!v.hasarRecords)v.hasarRecords=[];
+  const total=v.hasarRecords.reduce((s,r)=>s+(r.cost||0),0);
+  const sig=v.hasarRecords.filter(r=>r.insurance==="evet"||r.insurance==="kısmen").length;
+  const insC={evet:"var(--sage)",kısmen:"var(--accent)",hayır:"var(--rust)"};
+  const insL={evet:"Sigorta ödedi",kısmen:"Kısmen sigorta",hayır:"Cebimden"};
+  return`
+    ${v.hasarRecords.length>0?`<div class="stat-row"><div class="stat-card"><div class="stat-label">Toplam Tamir</div><div class="stat-value">${fmtTL(total)}</div></div><div class="stat-card"><div class="stat-label">Sigorta Kullanan</div><div class="stat-value sage">${sig} hasar</div></div></div>`:""}
+    <div class="section-head"><span class="section-title">Hasar Kayıtları</span><button class="outline-btn" onclick="showForm('newHasarForm')">+ Ekle</button></div>
+    <div id="newHasarForm" class="card" style="display:none;">
+      <div class="card-row">
+        <div class="field"><label class="lbl">Hasar türü</label><input id="hType" list="hTypeSugg" placeholder="Kaza, Çizik..."><datalist id="hTypeSugg"><option value="Kaza"><option value="Çizik"><option value="Göçük"><option value="Cam kırığı"><option value="Lastik patlaması"><option value="Vandalizm"></datalist></div>
+        <div class="field"><label class="lbl">Tarih</label><input id="hDate" type="date"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;">
+        <div class="field"><label class="lbl">Tamir tutarı ₺</label><input id="hCost" type="number" placeholder="0"></div>
+        <div class="field"><label class="lbl">Sigorta</label><select id="hInsurance"><option value="hayır">Hayır</option><option value="kısmen">Kısmen</option><option value="evet">Evet (tam)</option></select></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;"><div class="field"><label class="lbl">Fotoğraf</label><input id="hPhoto" type="file" accept="image/*"></div></div>
+      <div class="card-row" style="margin-top:8px;"><textarea id="hNote" placeholder="Açıklama"></textarea></div>
+      <div id="newHasarErr" class="err" style="display:none;"></div>
+      <div class="card-actions"><button class="ghost-btn" onclick="hideForm('newHasarForm')">Vazgeç</button><button class="primary-btn" onclick="saveHasar()">Kaydet</button></div>
+    </div>
+    ${v.hasarRecords.length===0?`<div class="empty">Hasar kaydı yok.</div>`:""}
+    ${v.hasarRecords.map(r=>`<div class="rcard"><div class="rcard-top"><div><div class="rcard-type">${esc(r.type)}</div><div class="rcard-meta">${fmtDate(r.date)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="text-align:right;"><div class="rcard-cost">${fmtTL(r.cost)}</div><div style="font-size:11px;color:${insC[r.insurance]||"var(--muted)"};font-weight:600;">${insL[r.insurance]||""}</div></div><button class="del-btn" onclick="delHasar('${r.id}')">✕</button></div></div>${r.photo?`<img src="${r.photo}" class="rcard-photo">`:""}${r.note?`<div class="rcard-note">${esc(r.note)}</div>`:""}</div>`).join("")}`;
+}
+function saveHasar(){
+  const v=getV();if(!v)return;
+  const type=document.getElementById("hType").value.trim();
+  const date=document.getElementById("hDate").value;
+  const cost=parseFloat(document.getElementById("hCost").value)||0;
+  const insurance=document.getElementById("hInsurance").value;
+  const note=document.getElementById("hNote").value.trim();
+  const photoFile=document.getElementById("hPhoto").files[0];
+  const err=document.getElementById("newHasarErr");
+  if(!type||!date){err.textContent="Tür ve tarih zorunlu.";err.style.display="block";return;}
+  err.style.display="none";
+  if(!v.hasarRecords)v.hasarRecords=[];
+  const rec={id:uid(),type,date,cost,insurance,note,photo:null};
+  if(photoFile){const reader=new FileReader();reader.onload=e=>{rec.photo=e.target.result;v.hasarRecords.unshift(rec);v.hasarRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));save();hideForm("newHasarForm");renderContent();};reader.readAsDataURL(photoFile);}
+  else{v.hasarRecords.unshift(rec);v.hasarRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));save();hideForm("newHasarForm");renderContent();}
+}
+function delHasar(id){const v=getV();if(!v)return;v.hasarRecords=v.hasarRecords.filter(r=>r.id!==id);save();renderContent();}
+
+// RAPOR
+function tabRapor(v){
+  const months={};
+  v.records.forEach(r=>{const m=r.date.slice(0,7);if(!months[m])months[m]={maint:0,fuel:0};months[m].maint+=(r.cost||0);});
+  (v.fuelRecords||[]).forEach(r=>{const m=r.date.slice(0,7);if(!months[m])months[m]={maint:0,fuel:0};months[m].fuel+=(r.cost||0);});
+  const sorted=Object.keys(months).sort().reverse().slice(0,6).reverse();
+  const maxVal=Math.max(...sorted.map(m=>months[m].maint+months[m].fuel),1);
+  const typeCounts={};v.records.forEach(r=>{typeCounts[r.type]=(typeCounts[r.type]||0)+1;});
+  const topTypes=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const typeCosts={};v.records.forEach(r=>{typeCosts[r.type]=(typeCosts[r.type]||0)+(r.cost||0);});
+  const topCosts=Object.entries(typeCosts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const tm=today().slice(0,7);
+  const mmaint=v.records.filter(r=>r.date.slice(0,7)===tm).reduce((s,r)=>s+(r.cost||0),0);
+  const mfuel=(v.fuelRecords||[]).filter(r=>r.date.slice(0,7)===tm).reduce((s,r)=>s+(r.cost||0),0);
+  return`
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Bu Ay Bakım</div><div class="stat-value">${fmtTL(mmaint)}</div></div>
+      <div class="stat-card"><div class="stat-label">Bu Ay Yakıt</div><div class="stat-value sage">${fmtTL(mfuel)}</div></div>
+    </div>
+    ${sorted.length>0?`<div class="card"><div class="section-title" style="margin-bottom:10px;">Aylık Harcama</div><div class="chart-bar-wrap">${sorted.map(m=>{const val=months[m].maint+months[m].fuel;const pct=Math.round((val/maxVal)*100);const label=m.slice(5)+"/"+m.slice(2,4);return`<div class="chart-bar-row"><div class="chart-bar-label">${label}</div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--accent);"></div></div><div class="chart-bar-val">${fmtTL(val)}</div></div>`;}).join("")}</div></div>`:""}
+    ${topTypes.length>0?`<div class="card"><div class="section-title" style="margin-bottom:10px;">En Sık Bakımlar</div>${topTypes.map(([t,c])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:14px;">${esc(t)}</span><span style="color:var(--accent);font-weight:600;">${c}x</span></div>`).join("")}</div>`:""}
+    ${topCosts.length>0?`<div class="card"><div class="section-title" style="margin-bottom:10px;">En Pahalı Bakımlar</div>${topCosts.map(([t,c])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:14px;">${esc(t)}</span><span style="color:var(--accent);font-weight:600;">${fmtTL(c)}</span></div>`).join("")}</div>`:""}`;
+}
+
+// TAKVİM
+function tabTakvim(v){
+  const now=new Date();const year=now.getFullYear();const month=now.getMonth();
+  const firstDay=(new Date(year,month,1).getDay()+6)%7;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const todayNum=now.getDate();
+  const eventDays={};
+  const mStr=`${year}-${String(month+1).padStart(2,"0")}`;
+  v.records.forEach(r=>{if(r.date.slice(0,7)===mStr){const d=parseInt(r.date.slice(8));eventDays[d]=(eventDays[d]||[]).concat([{name:r.type}]);}
+    if(r.nextDate&&r.nextDate.slice(0,7)===mStr){const d=parseInt(r.nextDate.slice(8));eventDays[d]=(eventDays[d]||[]).concat([{name:"Sonraki: "+r.type,alert:true}]);}});
+  (v.serviceRecords||[]).forEach(s=>{if(s.date.slice(0,7)===mStr){const d=parseInt(s.date.slice(8));eventDays[d]=(eventDays[d]||[]).concat([{name:s.name,alert:true}]);}});
+  (v.fuelRecords||[]).forEach(r=>{if(r.date.slice(0,7)===mStr){const d=parseInt(r.date.slice(8));eventDays[d]=(eventDays[d]||[]).concat([{name:"Yakıt"}]);}});
+  const dayNames=["Pt","Sa","Ça","Pe","Cu","Ct","Pz"];
+  let calHtml=`<div style="font-size:15px;font-weight:600;margin-bottom:10px;text-align:center;">${now.toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}</div>`;
+  calHtml+=`<div class="cal-grid">${dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join("")}`;
+  for(let i=0;i<firstDay;i++)calHtml+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const hasAlert=eventDays[d]&&eventDays[d].some(e=>e.alert);
+    const hasEvent=eventDays[d]&&eventDays[d].length>0;
+    const isToday=d===todayNum;
+    let cls="cal-day"+(isToday?" today":hasAlert?" has-alert":hasEvent?" has-event":"");
+    calHtml+=`<div class="${cls}">${d}</div>`;
+  }
+  calHtml+=`</div>`;
+  const allEv=[];
+  Object.entries(eventDays).forEach(([day,evs])=>evs.forEach(e=>allEv.push({day:parseInt(day),name:e.name})));
+  allEv.sort((a,b)=>a.day-b.day);
+  return`<div class="card">${calHtml}</div>
+    ${allEv.length===0?`<div class="empty">Bu ay olay yok.</div>`:allEv.map(e=>`<div class="rcard" style="display:flex;align-items:center;gap:10px;padding:10px 14px;"><div style="font-family:'Newsreader',serif;font-size:22px;font-weight:600;color:var(--accent);width:28px;">${e.day}</div><div style="font-size:14px;font-weight:600;">${esc(e.name)}</div></div>`).join("")}`;
+}
+
+// SERVİSLER
+function tabServis(v){
+  if(!v.contacts)v.contacts=[];
+  return`
+    <div class="section-head"><span class="section-title">Servis Kontakları</span><button class="outline-btn" onclick="showForm('newContactForm')">+ Ekle</button></div>
+    <div id="newContactForm" class="card" style="display:none;">
+      <div class="card-row">
+        <div class="field"><label class="lbl">Servis Adı</label><input id="cName" placeholder="Motor Servisi"></div>
+        <div class="field"><label class="lbl">Telefon</label><input id="cPhone" type="tel" placeholder="0532 123 45 67"></div>
+      </div>
+      <div class="card-row" style="margin-top:8px;"><div class="field"><label class="lbl">Not</label><input id="cNote" placeholder="Fren uzmanı"></div></div>
+      <div id="newContactErr" class="err" style="display:none;"></div>
+      <div class="card-actions"><button class="ghost-btn" onclick="hideForm('newContactForm')">Vazgeç</button><button class="primary-btn" onclick="saveContact()">Kaydet</button></div>
+    </div>
+    ${v.contacts.length===0?`<div class="empty">Servis eklenmedi.</div>`:""}
+    ${v.contacts.map(c=>`<div class="contact-card"><div><div style="font-size:15px;font-weight:600;">${esc(c.name)}</div><div style="font-size:13px;color:var(--muted);">${esc(c.phone)}</div>${c.note?`<div style="font-size:12px;color:var(--muted);">${esc(c.note)}</div>`:""}</div><div style="display:flex;gap:8px;"><a href="tel:${esc(c.phone)}"><button class="call-btn">📞 Ara</button></a><button class="del-btn" onclick="delContact('${c.id}')">✕</button></div></div>`).join("")}`;
+}
+function saveContact(){
+  const v=getV();if(!v)return;
+  const name=document.getElementById("cName").value.trim();
+  const phone=document.getElementById("cPhone").value.trim();
+  const note=document.getElementById("cNote").value.trim();
+  const err=document.getElementById("newContactErr");
+  if(!name||!phone){err.textContent="Ad ve telefon zorunlu.";err.style.display="block";return;}
+  err.style.display="none";
+  if(!v.contacts)v.contacts=[];
+  v.contacts.push({id:uid(),name,phone,note});save();hideForm("newContactForm");renderContent();
+}
+function delContact(id){const v=getV();if(!v)return;v.contacts=v.contacts.filter(c=>c.id!==id);save();renderContent();}
+
+// PROFİL
+function tabProfil(v){
+  return`
+    <div class="card">
+      <h2 style="font-family:'Newsreader',serif;margin-bottom:14px;">Araç Bilgileri</h2>
+      <div class="card-row" style="margin-bottom:8px;">
+        <div class="field"><label class="lbl">Araç Adı</label><input id="pName" value="${esc(v.name)}"></div>
+        <div class="field"><label class="lbl">Plaka</label><input id="pPlate" value="${esc(v.plate||"")}"></div>
+      </div>
+      <div class="card-row" style="margin-bottom:8px;">
+        <div class="field"><label class="lbl">Marka</label><input id="pBrand" value="${esc(v.brand||"")}"></div>
+        <div class="field"><label class="lbl">Model</label><input id="pModel" value="${esc(v.model||"")}"></div>
+      </div>
+      <div class="card-row" style="margin-bottom:8px;">
+        <div class="field"><label class="lbl">Yıl</label><input id="pYear" type="number" value="${esc(v.year||"")}"></div>
+        <div class="field"><label class="lbl">Alış Fiyatı ₺</label><input id="pPrice" type="number" value="${v.purchasePrice||""}"></div>
+      </div>
+      <label class="lbl" style="margin-top:8px;">Renk Teması</label>
+      <div class="color-opts" style="margin-top:8px;">${ACCENT_COLORS.map((c,i)=>`<div class="color-opt ${c===v.color?'selected':''}" style="background:${c};" onclick="setVehicleColor('${c}',this)" title="${ACCENT_NAMES[i]}"></div>`).join("")}</div>
+      <div class="card-actions"><button class="primary-btn" onclick="saveProfile()">💾 Kaydet</button></div>
+    </div>
+    <div class="card">
+      ${[["Plaka",v.plate],["Marka/Model",(v.brand||"")+(v.model?" "+v.model:"")],["Yıl",v.year],["Alış Fiyatı",v.purchasePrice>0?fmtTL(v.purchasePrice):""]].map(([l,val])=>val?`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);font-size:14px;">${l}</span><span style="font-weight:600;">${esc(String(val))}</span></div>`:"").join("")}
+    </div>`;
+}
+function setVehicleColor(c,el){document.querySelectorAll(".color-opt").forEach(e=>e.classList.remove("selected"));el.classList.add("selected");const v=getV();if(v){v.color=c;setAccent(c);}}
+function saveProfile(){
+  const v=getV();if(!v)return;
+  v.name=document.getElementById("pName").value.trim()||v.name;
+  v.plate=document.getElementById("pPlate").value.trim();
+  v.brand=document.getElementById("pBrand").value.trim();
+  v.model=document.getElementById("pModel").value.trim();
+  v.year=document.getElementById("pYear").value.trim();
+  v.purchasePrice=parseFloat(document.getElementById("pPrice").value)||0;
+  save();render();
+}
+
+// TOPLAM MALİYET
+function tabMaliyet(v){
+  const tm=v.records.reduce((s,r)=>s+(r.cost||0),0);
+  const tf=(v.fuelRecords||[]).reduce((s,r)=>s+(r.cost||0),0);
+  const th=(v.hasarRecords||[]).reduce((s,r)=>s+(r.cost||0),0);
+  const p=v.purchasePrice||0;const gt=p+tm+tf+th;
+  const cpk=v.currentKm>0?(gt/v.currentKm).toFixed(2)+" ₺/km":"—";
+  const fuelByMonth={};
+  (v.fuelRecords||[]).forEach(r=>{const m=r.date.slice(0,7);if(!fuelByMonth[m])fuelByMonth[m]={cost:0,liters:0};fuelByMonth[m].cost+=(r.cost||0);fuelByMonth[m].liters+=(r.liters||0);});
+  const fm=Object.keys(fuelByMonth).sort().reverse().slice(0,6).reverse();
+  const maxFP=Math.max(...fm.map(m=>fuelByMonth[m].liters>0?fuelByMonth[m].cost/fuelByMonth[m].liters:0),1);
+  return`
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Toplam Harcama</div><div class="stat-value">${fmtTL(gt)}</div></div>
+      <div class="stat-card"><div class="stat-label">Km Başına Toplam</div><div class="stat-value sage">${cpk}</div></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="section-title" style="margin-bottom:14px;">Maliyet Dağılımı</div>
+      ${[[p,"Alış Fiyatı","var(--rust)"],[tm,"Bakım","var(--accent)"],[tf,"Yakıt","var(--sage)"],[th,"Hasar","var(--rust)"]].map(([val,lbl,clr])=>val>0?`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;color:var(--muted);">${lbl}</span><span style="font-size:14px;font-weight:600;">${fmtTL(val)}</span></div><div style="height:10px;background:var(--ink);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${gt>0?Math.round(val/gt*100):0}%;background:${clr};border-radius:5px;"></div></div></div>`:``).join("")}
+      <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);"><span style="font-weight:600;">TOPLAM</span><span style="font-family:'Newsreader',serif;font-size:20px;color:var(--accent);">${fmtTL(gt)}</span></div>
+    </div>
+    ${fm.length>=2?`<div class="card"><div class="section-title" style="margin-bottom:10px;">Aylık Yakıt ₺/L</div><div class="chart-bar-wrap">${fm.map(m=>{const avg=fuelByMonth[m].liters>0?fuelByMonth[m].cost/fuelByMonth[m].liters:0;const pct=Math.round((avg/maxFP)*100);return`<div class="chart-bar-row"><div class="chart-bar-label">${m.slice(5)+"/"+m.slice(2,4)}</div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--sage);"></div></div><div class="chart-bar-val">${avg.toFixed(1)} ₺/L</div></div>`;}).join("")}</div></div>`:""}
+    ${p===0?`<div class="empty">Alış fiyatı için <b>Profil</b> sekmesine git.</div>`:""}`;
+}
+
+// YILLIK ÖZET
+function tabYillik(v){
+  const years={};
+  v.records.forEach(r=>{const y=r.date.slice(0,4);if(!years[y])years[y]={maint:0,fuel:0,hasar:0,records:[]};years[y].maint+=(r.cost||0);years[y].records.push(r);});
+  (v.fuelRecords||[]).forEach(r=>{const y=r.date.slice(0,4);if(!years[y])years[y]={maint:0,fuel:0,hasar:0,records:[]};years[y].fuel+=(r.cost||0);});
+  (v.hasarRecords||[]).forEach(r=>{const y=r.date.slice(0,4);if(!years[y])years[y]={maint:0,fuel:0,hasar:0,records:[]};years[y].hasar+=(r.cost||0);});
+  const sy=Object.keys(years).sort().reverse();
+  if(sy.length===0)return`<div class="empty">Yıllık veri yok.</div>`;
+  const months={};
+  v.records.forEach(r=>{const m=r.date.slice(0,7);if(!months[m])months[m]={t:0};months[m].t+=(r.cost||0);});
+  (v.fuelRecords||[]).forEach(r=>{const m=r.date.slice(0,7);if(!months[m])months[m]={t:0};months[m].t+=(r.cost||0);});
+  const me=Object.entries(months).map(([m,d])=>({m,t:d.t})).sort((a,b)=>a.t-b.t);
+  const best=me[0];const worst=me[me.length-1];
+  const maxT=Math.max(...sy.map(y=>years[y].maint+years[y].fuel+years[y].hasar),1);
+  return`
+    ${me.length>1?`<div class="stat-row"><div class="stat-card"><div class="stat-label">En Verimli Ay 🟢</div><div class="stat-value sage" style="font-size:16px;">${best.m}</div><div style="font-size:12px;color:var(--muted);">${fmtTL(best.t)}</div></div><div class="stat-card"><div class="stat-label">En Pahalı Ay 🔴</div><div class="stat-value" style="font-size:16px;">${worst.m}</div><div style="font-size:12px;color:var(--muted);">${fmtTL(worst.t)}</div></div></div>`:""}
+    ${sy.map(y=>{const d=years[y];const total=d.maint+d.fuel+d.hasar;const pct=Math.round((total/maxT)*100);const topT=[...new Set(d.records.map(r=>r.type))].slice(0,3).join(", ");
+    return`<div class="card" style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div style="font-family:'Newsreader',serif;font-size:22px;font-weight:600;">${y}</div><div style="font-family:'Newsreader',serif;font-size:20px;color:var(--accent);">${fmtTL(total)}</div></div><div style="height:8px;background:var(--ink);border-radius:4px;overflow:hidden;margin-bottom:10px;"><div style="height:100%;width:${pct}%;background:var(--accent);border-radius:4px;"></div></div><div style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">🔧 Bakım</span><span>${fmtTL(d.maint)}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">⛽ Yakıt</span><span>${fmtTL(d.fuel)}</span></div>${d.hasar>0?`<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">💥 Hasar</span><span style="color:var(--rust);">${fmtTL(d.hasar)}</span></div>`:""}${topT?`<div style="font-size:12px;color:var(--muted);margin-top:4px;padding-top:8px;border-top:1px solid var(--border);">En sık: ${esc(topT)}</div>`:""}</div></div>`;}).join("")}`;
+}
+
+// FORM HELPERS
+function showForm(id){document.getElementById(id).style.display="block";}
+function hideForm(id){document.getElementById(id).style.display="none";}
+
+// RENDER
+function renderContent(){
+  const v=getV();
+  if(!v){document.getElementById("vehicleContent").innerHTML="";return;}
+  if(v.color)setAccent(v.color);
+  applyRepeatRules(v);
+  const coverHtml=`<div class="vehicle-cover">${v.coverPhoto?`<img src="${v.coverPhoto}">`:`<svg width="48" height="48" viewBox="0 0 100 100" fill="none"><path d="M22 62A28 28 0 1 1 78 62" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><line x1="50" y1="62" x2="68" y2="40" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="62" r="7" fill="var(--accent)"/></svg>`}
+    <div class="vehicle-cover-overlay"><div class="vehicle-cover-info"><div class="vehicle-cover-name">${esc(v.name)}</div><div class="vehicle-cover-sub">${v.plate?v.plate+" · ":""}${v.currentKm?v.currentKm.toLocaleString("tr-TR")+" km":""}</div></div></div>
+  </div>`;
+  let content="";
+  if(activeTab==="bakım")content=tabBakim(v);
+  else if(activeTab==="yakıt")content=tabYakit(v);
+  else if(activeTab==="muayene")content=tabMuayene(v);
+  else if(activeTab==="hasar")content=tabHasar(v);
+  else if(activeTab==="rapor")content=tabRapor(v);
+  else if(activeTab==="takvim")content=tabTakvim(v);
+  else if(activeTab==="servis")content=tabServis(v);
+  else if(activeTab==="profil")content=tabProfil(v);
+  else if(activeTab==="maliyet")content=tabMaliyet(v);
+  else if(activeTab==="yillik")content=tabYillik(v);
+  document.getElementById("vehicleContent").innerHTML=coverHtml+content;
 }
 
 function render(){
-  const tabs = document.getElementById("vehicleTabs");
-  tabs.innerHTML = vehicles.map(v => `
-    <div class="vehicle-tab ${v.id === activeVehicleId ? 'active' : ''}" onclick="selectVehicle('${v.id}')">${escapeHtml(v.name)}</div>
-  `).join("") + `<div class="vehicle-tab-add" onclick="toggleNewVehicleForm(true)">+ Araç ekle</div>`;
-
-  const v = getActiveVehicle();
-  document.getElementById("noVehicleState").style.display = (!v) ? "block" : "none";
-  document.getElementById("vehicleContent").style.display = v ? "block" : "none";
-  if(!v) return;
-
-  renderMaintenance();
-  renderFuel();
-  renderService();
+  const v=getV();
+  if(v&&v.color)setAccent(v.color);
+  document.getElementById("vehicleTabs").innerHTML=vehicles.map(x=>`
+    <div class="vtab ${x.id===activeId?'active':''}" onclick="selectVehicle('${x.id}')" style="${x.id===activeId&&x.color?'border-color:'+x.color+';color:'+x.color+';':''}">
+      ${x.coverPhoto?`<img class="vtab-photo" src="${x.coverPhoto}">`:`<span>🚗</span>`}
+      ${esc(x.name)}
+    </div>`).join("")+`<div class="vtab-add" onclick="toggleNewVehicle(true)">+ Araç ekle</div>`;
+  document.getElementById("noVehicle").style.display=!v?"block":"none";
+  document.getElementById("vehicleContent").style.display=v?"block":"none";
+  renderBottomNav();
+  renderContent();
 }
 
-load();
-render();
+// PAYLAŞ
+function openShare(){
+  const v=getV();
+  const title="Araçlarım";
+  const text=v?v.name+" bakım geçmişim":"Araç bakım takip";
+  if(navigator.share)navigator.share({title,text,url:window.location.href}).catch(()=>{});
+  else{navigator.clipboard.writeText(window.location.href).then(()=>alert("Link kopyalandı!")).catch(()=>alert("Link: "+window.location.href));}
+}
+
+// AYARLAR
+function openSettings(){
+  const v=getV();
+  document.getElementById("settingsVehicleName").textContent=v?v.name:"—";
+  document.getElementById("settingsModal").classList.add("open");
+}
+function closeSettings(){document.getElementById("settingsModal").classList.remove("open");}
+
+// YEDEKLEME
+function exportData(){
+  const json=JSON.stringify({vehicles,version:6},null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="aracarim-yedek-"+today()+".json";a.click();URL.revokeObjectURL(url);
+}
+function exportCSV(){
+  const v=getV();if(!v)return;
+  const rows=[["Tür","Tarih","Km","Tutar","Sonraki Km","Sonraki Tarih","Not"]];
+  v.records.forEach(r=>rows.push([r.type,r.date,r.km,r.cost,r.nextKm||"",r.nextDate||"",r.note||""]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=v.name+"-bakim-"+today()+".csv";a.click();URL.revokeObjectURL(url);
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);vehicles=data.vehicles||[];activeId=vehicles[0]?vehicles[0].id:null;save();closeSettings();render();alert("Veriler yüklendi!");}catch(err){alert("Dosya hatalı!");}};
+  reader.readAsText(file);
+}
+
+// SES
+function speakNotification(text){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='tr-TR';u.rate=0.9;u.pitch=1;u.volume=1;
+  speechSynthesis.speak(u);
+}
+function testSpeech(){speakNotification("Araçlarım uygulamasına hoş geldiniz. Sesli bildirimler aktif.");}
+
+function checkNotifications(){
+  const t=today();
+  if(localStorage.getItem("lastNotif")===t)return;
+  let msgs=[];
+  vehicles.forEach(v=>{
+    const alerts=computeAlerts(v);
+    alerts.filter(a=>a.p===0).forEach(a=>msgs.push(v.name+": "+a.text.replace(/[⚠️🔴🟠🟡]/g,"").trim()));
+  });
+  if(msgs.length>0){
+    const msg="Dikkat! "+msgs.join(". ");
+    setTimeout(()=>{speakNotification(msg);alert("⚠️\n"+msgs.join("\n"));},1000);
+  }
+  localStorage.setItem("lastNotif",t);
+}
+
+// TEMA
+function toggleTheme(){
+  const isLight=document.documentElement.classList.toggle("light");
+  document.getElementById("themeBtn").textContent=isLight?"🌙":"☀️";
+  localStorage.setItem("aracarim-theme",isLight?"light":"dark");
+}
+function loadTheme(){
+  const saved=localStorage.getItem("aracarim-theme");
+  if(saved==="light"){
+    document.documentElement.classList.add("light");
+    const btn=document.getElementById("themeBtn");
+    if(btn)btn.textContent="🌙";
+  }
+}
+
+load();loadTheme();checkNotifications();render();
 </script>
 </body>
 </html>
