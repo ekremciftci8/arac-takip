@@ -861,13 +861,27 @@ function openShare(){
   const url=window.location.href.startsWith("file://")
     ?"https://ekremciftci8.github.io/ara-lar-m/"
     :window.location.href;
-  if(navigator.share){
-    navigator.share({title,text,url}).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(url)
-      .then(()=>alert("Link kopyalandı!\n"+url))
-      .catch(()=>alert("Link: "+url));
-  }
+  // Önce modalı kapat, sonra paylaş
+  closeSettings();
+  setTimeout(()=>{
+    if(navigator.share){
+      navigator.share({title,text,url}).catch(()=>{});
+      return;
+    }
+    // Clipboard fallback
+    const input=document.createElement("input");
+    input.style.cssText="position:fixed;top:0;left:0;opacity:0;";
+    input.value=url;
+    document.body.appendChild(input);
+    input.focus();input.select();
+    try{
+      document.execCommand("copy");
+      alert("Link kopyalandı!\n"+url);
+    } catch(e){
+      alert("Link:\n"+url);
+    }
+    document.body.removeChild(input);
+  }, 300);
 }
 
 // AYARLAR
