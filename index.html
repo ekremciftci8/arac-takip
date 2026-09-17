@@ -51,10 +51,10 @@ body{background:var(--ink);color:var(--paper);font-family:'IBM Plex Sans',-apple
 /* ARAÇ KAPAK */
 .vehicle-cover{position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;height:140px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
 .vehicle-cover img{width:100%;height:100%;object-fit:cover;}
-.vehicle-cover-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,29,36,0.85),transparent);display:flex;align-items:flex-end;padding:14px;}
+.vehicle-cover-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0.1) 100%);display:flex;align-items:flex-end;padding:14px;}
 .vehicle-cover-info{flex:1;}
-.vehicle-cover-name{font-family:'Newsreader',serif;font-size:22px;font-weight:600;}
-.vehicle-cover-sub{font-size:12px;color:rgba(240,238,232,0.7);margin-top:2px;}
+.vehicle-cover-name{font-family:'Newsreader',serif;font-size:22px;font-weight:700;color:#FFFFFF;text-shadow:0 2px 8px rgba(0,0,0,1),0 0 20px rgba(0,0,0,0.8);}
+.vehicle-cover-sub{font-size:12px;color:rgba(255,255,255,0.95);margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,1);}
 .cover-edit-btn{background:rgba(255,255,255,0.15);border:none;color:var(--paper);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);}
 
 /* MUAYENE WIDGET */
@@ -193,8 +193,6 @@ textarea{resize:vertical;min-height:60px;}
   <div class="header">
     <div class="app-title">Araçlarım</div>
     <div class="header-actions">
-      <button class="hbtn" onclick="toggleTheme()" id="themeBtn">☀️</button>
-      <button class="hbtn" onclick="openShare()">📤</button>
       <button class="hbtn" onclick="openSettings()">⚙️</button>
     </div>
   </div>
@@ -233,10 +231,12 @@ textarea{resize:vertical;min-height:60px;}
       <button class="danger-btn" onclick="deleteVehicleConfirm()">🗑️ Bu Aracı Sil</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="primary-btn" style="width:100%;padding:12px;" id="themeBtn" onclick="toggleTheme()">☀️ Aydınlık Temaya Geç</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="openShare()">📤 Uygulamayı Paylaş</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="testSpeech()">🔊 Sesi Test Et</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportData()">📥 Verileri İndir (JSON)</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportCSV()">📊 CSV İndir (Excel)</button>
-      <button class="primary-btn" style="width:100%;padding:12px;" onclick="document.getElementById('importFile').click()">📤 Geri Yükle</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="document.getElementById('importFile').click()">📂 Geri Yükle</button>
       <input id="importFile" type="file" accept=".json" style="display:none;" onchange="importData(event)">
     </div>
   </div>
@@ -857,9 +857,17 @@ function render(){
 function openShare(){
   const v=getV();
   const title="Araçlarım";
-  const text=v?v.name+" bakım geçmişim":"Araç bakım takip";
-  if(navigator.share)navigator.share({title,text,url:window.location.href}).catch(()=>{});
-  else{navigator.clipboard.writeText(window.location.href).then(()=>alert("Link kopyalandı!")).catch(()=>alert("Link: "+window.location.href));}
+  const text=v?v.name+" bakım geçmişim":"Araç bakım takip uygulamam";
+  const url=window.location.href.startsWith("file://")
+    ?"https://ekremciftci8.github.io/ara-lar-m/"
+    :window.location.href;
+  if(navigator.share){
+    navigator.share({title,text,url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url)
+      .then(()=>alert("Link kopyalandı!\n"+url))
+      .catch(()=>alert("Link: "+url));
+  }
 }
 
 // AYARLAR
@@ -921,7 +929,8 @@ function checkNotifications(){
 // TEMA
 function toggleTheme(){
   const isLight=document.documentElement.classList.toggle("light");
-  document.getElementById("themeBtn").textContent=isLight?"🌙":"☀️";
+  const btn=document.getElementById("themeBtn");
+  if(btn)btn.textContent=isLight?"🌙 Karanlık Temaya Geç":"☀️ Aydınlık Temaya Geç";
   localStorage.setItem("aracarim-theme",isLight?"light":"dark");
 }
 function loadTheme(){
@@ -929,7 +938,7 @@ function loadTheme(){
   if(saved==="light"){
     document.documentElement.classList.add("light");
     const btn=document.getElementById("themeBtn");
-    if(btn)btn.textContent="🌙";
+    if(btn)btn.textContent="🌙 Karanlık Temaya Geç";
   }
 }
 
