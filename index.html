@@ -172,6 +172,39 @@ textarea{resize:vertical;min-height:60px;}
 
 /* REPEAT RULE */
 .repeat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(127,169,127,0.15);border:1px solid var(--sage);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--sage);margin-top:4px;}
+
+/* ÖZET / WIDGET */
+.ozet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.ozet-vehicle-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;}
+.ozet-vehicle-card:hover{border-color:var(--accent);}
+.ozet-card-cover{height:80px;background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.ozet-card-cover img{width:100%;height:100%;object-fit:cover;}
+.ozet-card-body{padding:10px;}
+.ozet-card-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.ozet-card-km{font-size:12px;color:var(--muted);}
+.ozet-card-alert{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;margin-top:4px;}
+.ozet-card-alert.red{color:var(--rust);}
+.ozet-card-alert.orange{color:var(--accent);}
+.ozet-card-alert.ok{color:var(--sage);}
+
+/* KARŞILAŞTIRMA */
+.compare-row{display:grid;gap:10px;margin-bottom:8px;}
+.compare-header{display:grid;gap:10px;margin-bottom:12px;}
+.compare-cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.compare-cell.winner{border-color:var(--sage);background:rgba(127,169,127,0.1);}
+.compare-label{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.compare-val{font-family:'Newsreader',serif;font-size:18px;font-weight:600;}
+
+/* QUICK ADD */
+.quick-add-fab{position:fixed;right:20px;bottom:90px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:var(--ink);font-size:24px;cursor:pointer;box-shadow:0 4px 16px rgba(232,135,58,0.4);z-index:99;display:flex;align-items:center;justify-content:center;}
+
+/* ŞABLONLAR */
+.template-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.template-card:hover{border-color:var(--accent);}
+.template-name{font-size:14px;font-weight:600;}
+.template-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.template-count{background:rgba(232,135,58,0.15);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;}
+.repeat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(127,169,127,0.15);border:1px solid var(--sage);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--sage);margin-top:4px;}
 </style>
 </head>
 <body>
@@ -218,6 +251,9 @@ textarea{resize:vertical;min-height:60px;}
 <!-- ALT NAV -->
 <nav class="bottom-nav" id="bottomNav"></nav>
 
+<!-- HIZLI BAKIM EKLE -->
+<button class="quick-add-fab" id="quickAddFab" onclick="quickAddBakim()" title="Hızlı Bakım Ekle" style="display:none;">+</button>
+
 <!-- AYARLAR -->
 <div id="settingsModal" class="modal" onclick="if(event.target===this)closeSettings()">
   <div class="modal-sheet">
@@ -246,7 +282,7 @@ textarea{resize:vertical;min-height:60px;}
 const SK="aracarim-v6";
 const ACCENT_COLORS=["#E8873A","#5B8FD4","#7FA97F","#C1785A","#A97BC1","#D4A85B","#5BC1BA"];
 const ACCENT_NAMES=["Turuncu","Mavi","Yeşil","Pas","Mor","Altın","Teal"];
-let vehicles=[],activeId=null,activeTab="bakım",mFilter=null,newVehicleColor=ACCENT_COLORS[0];
+let vehicles=[],activeId=null,activeTab="ozet",mFilter=null,newVehicleColor=ACCENT_COLORS[0];
 
 const uid=()=>Math.random().toString(36).slice(2,10);
 const fmtTL=n=>new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:0}).format(n||0);
@@ -317,16 +353,19 @@ function saveCoverPhoto(e){
 
 // ALT NAV
 const TABS=[
+  {id:"ozet",icon:"🏠",label:"Özet"},
   {id:"bakım",icon:"🔧",label:"Bakım"},
   {id:"yakıt",icon:"⛽",label:"Yakıt"},
   {id:"muayene",icon:"📋",label:"Muayene"},
   {id:"hasar",icon:"💥",label:"Hasar"},
   {id:"rapor",icon:"📊",label:"Rapor"},
   {id:"takvim",icon:"📅",label:"Takvim"},
+  {id:"karsilastir",icon:"⚖️",label:"Karşılaştır"},
   {id:"servis",icon:"📞",label:"Servisler"},
   {id:"profil",icon:"🚗",label:"Profil"},
   {id:"maliyet",icon:"💰",label:"Maliyet"},
   {id:"yillik",icon:"📈",label:"Yıllık"},
+  {id:"sablonlar",icon:"📝",label:"Şablonlar"},
 ];
 function renderBottomNav(){
   document.getElementById("bottomNav").innerHTML=TABS.map(t=>`
@@ -336,7 +375,11 @@ function renderBottomNav(){
     </button>`).join("");
 }
 function switchTab(tab){
-  activeTab=tab;renderBottomNav();renderContent();
+  activeTab=tab;
+  // FAB sadece bakım sekmesinde görünsün
+  const fab=document.getElementById("quickAddFab");
+  if(fab)fab.style.display=(tab==="bakım"&&getV())?"flex":"none";
+  renderBottomNav();renderContent();
 }
 
 // KM
@@ -812,6 +855,189 @@ function tabYillik(v){
     return`<div class="card" style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div style="font-family:'Newsreader',serif;font-size:22px;font-weight:600;">${y}</div><div style="font-family:'Newsreader',serif;font-size:20px;color:var(--accent);">${fmtTL(total)}</div></div><div style="height:8px;background:var(--ink);border-radius:4px;overflow:hidden;margin-bottom:10px;"><div style="height:100%;width:${pct}%;background:var(--accent);border-radius:4px;"></div></div><div style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">🔧 Bakım</span><span>${fmtTL(d.maint)}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">⛽ Yakıt</span><span>${fmtTL(d.fuel)}</span></div>${d.hasar>0?`<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">💥 Hasar</span><span style="color:var(--rust);">${fmtTL(d.hasar)}</span></div>`:""}${topT?`<div style="font-size:12px;color:var(--muted);margin-top:4px;padding-top:8px;border-top:1px solid var(--border);">En sık: ${esc(topT)}</div>`:""}</div></div>`;}).join("")}`;
 }
 
+
+// ÖZET EKRANI
+function tabOzet(){
+  if(vehicles.length===0) return `<div class="empty">Henüz araç eklemedin.<br><b>+ Araç ekle</b> ile başla.</div>`;
+  const now=new Date();now.setHours(0,0,0,0);
+  const diff=iso=>Math.floor((new Date(iso+"T00:00:00")-now)/86400000);
+  
+  const cards=vehicles.map(v=>{
+    const alerts=computeAlerts(v);
+    const critical=alerts.filter(a=>a.p<=1);
+    const warn=alerts.filter(a=>a.p===2||a.p===3);
+    const totalCost=v.records.reduce((s,r)=>s+(r.cost||0),0)+(v.fuelRecords||[]).reduce((s,r)=>s+(r.cost||0),0);
+    const lastRecord=v.records[0];
+    const accentColor=v.color||"var(--accent)";
+    let alertHtml="";
+    if(critical.length>0) alertHtml=`<div class="ozet-card-alert red">🔴 ${critical.length} acil uyarı</div>`;
+    else if(warn.length>0) alertHtml=`<div class="ozet-card-alert orange">🟡 ${warn.length} yaklaşan</div>`;
+    else alertHtml=`<div class="ozet-card-alert ok">✅ Sorun yok</div>`;
+    return `<div class="ozet-vehicle-card" onclick="selectVehicle('${v.id}');switchTab('bakım')">
+      <div class="ozet-card-cover" style="border-bottom:2px solid ${accentColor};">
+        ${v.coverPhoto?`<img src="${v.coverPhoto}">`:`<svg width="32" height="32" viewBox="0 0 100 100" fill="none"><path d="M22 62A28 28 0 1 1 78 62" stroke="${accentColor}" stroke-width="8" stroke-linecap="round"/><line x1="50" y1="62" x2="68" y2="40" stroke="${accentColor}" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="62" r="8" fill="${accentColor}"/></svg>`}
+      </div>
+      <div class="ozet-card-body">
+        <div class="ozet-card-name">${esc(v.name)}</div>
+        <div class="ozet-card-km">${(v.currentKm||0).toLocaleString("tr-TR")} km · ${fmtTL(totalCost)}</div>
+        ${alertHtml}
+        ${lastRecord?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">Son: ${esc(lastRecord.type)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+
+  // Toplam tüm araçların uyarıları
+  const allAlerts=[];
+  vehicles.forEach(v=>{computeAlerts(v).forEach(a=>allAlerts.push({...a,vehicle:v.name}));});
+  allAlerts.sort((a,b)=>a.p-b.p);
+  const alertsHtml=allAlerts.slice(0,5).map(a=>`
+    <div class="alert-box ${a.type}">
+      <div><div class="alert-title">${esc(a.vehicle)}: ${esc(a.text)}</div><div class="alert-sub">${esc(a.sub)}</div></div>
+      <span class="badge ${a.p<=1?"red":"orange"}">${esc(a.badge)}</span>
+    </div>`).join("");
+
+  return `
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'Newsreader',serif;font-size:18px;font-weight:500;margin-bottom:10px;">Tüm Araçlar</div>
+      <div class="ozet-grid">${cards}</div>
+    </div>
+    ${allAlerts.length>0?`<div style="font-family:'Newsreader',serif;font-size:18px;font-weight:500;margin-bottom:10px;">Aktif Uyarılar</div>${alertsHtml}`:"<div class='empty'>Tüm araçlarda herhangi bir uyarı yok. ✅</div>"}`;
+}
+
+// KARŞILAŞTIRMA
+function tabKarsilastir(){
+  if(vehicles.length<2) return `<div class="empty">Karşılaştırma için en az 2 araç gerekli.</div>`;
+  
+  const cols=vehicles.length;
+  const gridStyle=`grid-template-columns:120px ${"1fr ".repeat(cols).trim()};`;
+  
+  const metrics=[
+    {label:"Toplam Bakım",fn:v=>v.records.reduce((s,r)=>s+(r.cost||0),0),fmt:fmtTL,lowerBetter:true},
+    {label:"Toplam Yakıt",fn:v=>(v.fuelRecords||[]).reduce((s,r)=>s+(r.cost||0),0),fmt:fmtTL,lowerBetter:true},
+    {label:"Toplam Hasar",fn:v=>(v.hasarRecords||[]).reduce((s,r)=>s+(r.cost||0),0),fmt:fmtTL,lowerBetter:true},
+    {label:"Toplam Maliyet",fn:v=>(v.purchasePrice||0)+v.records.reduce((s,r)=>s+(r.cost||0),0)+(v.fuelRecords||[]).reduce((s,r)=>s+(r.cost||0),0)+(v.hasarRecords||[]).reduce((s,r)=>s+(r.cost||0),0),fmt:fmtTL,lowerBetter:true},
+    {label:"Km Başına ₺",fn:v=>v.currentKm>0?((v.purchasePrice||0)+v.records.reduce((s,r)=>s+(r.cost||0),0)+(v.fuelRecords||[]).reduce((s,r)=>s+(r.cost||0),0))/v.currentKm:0,fmt:n=>n.toFixed(2)+" ₺/km",lowerBetter:true},
+    {label:"Güncel Km",fn:v=>v.currentKm||0,fmt:n=>n.toLocaleString("tr-TR")+" km",lowerBetter:false},
+    {label:"Bakım Sayısı",fn:v=>v.records.length,fmt:n=>n+" kayıt",lowerBetter:false},
+    {label:"Hasar Sayısı",fn:v=>(v.hasarRecords||[]).length,fmt:n=>n+" hasar",lowerBetter:true},
+    {label:"Ort. Tüketim",fn:v=>{
+      const fr=v.fuelRecords||[];if(fr.length<2)return null;
+      const s=[...fr].sort((a,b)=>a.km-b.km);
+      const kd=s[s.length-1].km-s[0].km;const ld=s.reduce((t,r)=>t+r.liters,0)-s[0].liters;
+      return kd>0&&ld>0?kd/ld:null;
+    },fmt:n=>n===null?"—":n.toFixed(2)+" km/lt",lowerBetter:false},
+  ];
+
+  const headerRow=`<div style="display:grid;${gridStyle}gap:8px;margin-bottom:8px;">
+    <div></div>
+    ${vehicles.map(v=>`<div style="text-align:center;font-size:13px;font-weight:700;color:${v.color||"var(--accent)"};">${esc(v.name)}</div>`).join("")}
+  </div>`;
+
+  const rows=metrics.map(m=>{
+    const vals=vehicles.map(v=>m.fn(v));
+    const validVals=vals.filter(v=>v!==null&&v!==0);
+    const bestVal=validVals.length>0?(m.lowerBetter?Math.min(...validVals):Math.max(...validVals)):null;
+    return `<div style="display:grid;${gridStyle}gap:8px;margin-bottom:8px;align-items:center;">
+      <div style="font-size:12px;color:var(--muted);font-weight:600;">${m.label}</div>
+      ${vals.map((val,i)=>{
+        const isWinner=bestVal!==null&&val!==null&&val===bestVal;
+        const displayVal=val===null?"—":m.fmt(val);
+        return`<div class="compare-cell ${isWinner?'winner':''}" style="border-color:${isWinner?"var(--sage)":vehicles[i].color||"var(--border)"};">
+          <div class="compare-val" style="font-size:14px;color:${isWinner?"var(--sage)":"var(--paper)"};">${displayVal}</div>
+          ${isWinner?`<div style="font-size:10px;color:var(--sage);margin-top:2px;">🏆</div>`:""}
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+
+  return `
+    <div style="font-family:'Newsreader',serif;font-size:18px;font-weight:500;margin-bottom:14px;">Araçlar Arası Karşılaştırma</div>
+    <div style="overflow-x:auto;">
+      ${headerRow}${rows}
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;">🏆 Daha iyi değer</div>`;
+}
+
+// HIZLI BAKIM EKLE
+function quickAddBakim(){
+  switchTab("bakım");
+  setTimeout(()=>{
+    const form=document.getElementById("newRecordForm");
+    if(form){
+      form.style.display="block";
+      form.scrollIntoView({behavior:"smooth"});
+    }
+  },100);
+}
+
+// BAKIIM ŞABLONLARI
+const TEMPLATES={
+  "Honda CB500":[
+    {type:"Yağ değişimi",intervalKm:6000},
+    {type:"Filtre değişimi",intervalKm:12000},
+    {type:"Ön Fren Balatası",intervalKm:20000},
+    {type:"Arka Fren Balatası",intervalKm:15000},
+    {type:"Zincir/dişli",intervalKm:25000},
+  ],
+  "Yamaha MT-07":[
+    {type:"Yağ değişimi",intervalKm:7000},
+    {type:"Filtre değişimi",intervalKm:14000},
+    {type:"Zincir/dişli",intervalKm:20000},
+    {type:"Ön Fren Balatası",intervalKm:25000},
+    {type:"Arka Fren Balatası",intervalKm:18000},
+  ],
+  "Scooter / Otomatik":[
+    {type:"Yağ değişimi",intervalKm:3000},
+    {type:"Varyatör Temizliği",intervalKm:8000},
+    {type:"Tahrik Seti",intervalKm:15000},
+    {type:"Ön Fren Balatası",intervalKm:12000},
+    {type:"Arka Fren Balatası",intervalKm:10000},
+  ],
+  "Araba (Benzin)":[
+    {type:"Yağ değişimi",intervalKm:10000},
+    {type:"Filtre değişimi",intervalKm:15000},
+    {type:"Ön Fren Balatası",intervalKm:30000},
+    {type:"Arka Fren Balatası",intervalKm:40000},
+    {type:"Akü",intervalKm:80000},
+  ],
+  "Araba (Dizel)":[
+    {type:"Yağ değişimi",intervalKm:15000},
+    {type:"Filtre değişimi",intervalKm:15000},
+    {type:"Ön Fren Balatası",intervalKm:35000},
+    {type:"Arka Fren Balatası",intervalKm:45000},
+    {type:"Akü",intervalKm:80000},
+  ],
+};
+
+function tabSablonlar(v){
+  return `
+    <div style="font-family:'Newsreader',serif;font-size:18px;font-weight:500;margin-bottom:6px;">Bakım Takvimi Şablonları</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Seç, ${esc(v.name)} aracına otomatik tekrarlayan kural eklensin.</p>
+    ${Object.entries(TEMPLATES).map(([name,rules])=>`
+      <div class="template-card" onclick="applyTemplate('${name}')">
+        <div>
+          <div class="template-name">${esc(name)}</div>
+          <div class="template-sub">${rules.map(r=>r.type+" ("+r.intervalKm.toLocaleString("tr-TR")+" km)").join(", ")}</div>
+        </div>
+        <span class="template-count">${rules.length} kural</span>
+      </div>`).join("")}`;
+}
+
+function applyTemplate(templateName){
+  const v=getV();if(!v)return;
+  const rules=TEMPLATES[templateName];if(!rules)return;
+  if(!confirm("'"+templateName+"' şablonunu '"+v.name+"' aracına uygulamak istiyor musun? Mevcut tekrarlayan kurallar güncellenir."))return;
+  if(!v.repeatRules)v.repeatRules=[];
+  rules.forEach(rule=>{
+    const idx=v.repeatRules.findIndex(r=>r.type===rule.type);
+    if(idx>=0)v.repeatRules[idx].intervalKm=rule.intervalKm;
+    else v.repeatRules.push({type:rule.type,intervalKm:rule.intervalKm});
+  });
+  save();
+  alert("✅ Şablon uygulandı! "+rules.length+" kural eklendi.\nBakım eklerken bu türlerde otomatik sonraki km hesaplanacak.");
+  switchTab("bakım");
+}
+
 // FORM HELPERS
 function showForm(id){document.getElementById(id).style.display="block";}
 function hideForm(id){document.getElementById(id).style.display="none";}
@@ -822,11 +1048,13 @@ function renderContent(){
   if(!v){document.getElementById("vehicleContent").innerHTML="";return;}
   if(v.color)setAccent(v.color);
   applyRepeatRules(v);
-  const coverHtml=`<div class="vehicle-cover">${v.coverPhoto?`<img src="${v.coverPhoto}">`:`<svg width="48" height="48" viewBox="0 0 100 100" fill="none"><path d="M22 62A28 28 0 1 1 78 62" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><line x1="50" y1="62" x2="68" y2="40" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="62" r="7" fill="var(--accent)"/></svg>`}
+  const coverHtml=activeTab==="ozet"||activeTab==="karsilastir"?"":
+    `<div class="vehicle-cover">${v.coverPhoto?`<img src="${v.coverPhoto}">`:`<svg width="48" height="48" viewBox="0 0 100 100" fill="none"><path d="M22 62A28 28 0 1 1 78 62" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><line x1="50" y1="62" x2="68" y2="40" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="62" r="7" fill="var(--accent)"/></svg>`}
     <div class="vehicle-cover-overlay"><div class="vehicle-cover-info"><div class="vehicle-cover-name">${esc(v.name)}</div><div class="vehicle-cover-sub">${v.plate?v.plate+" · ":""}${v.currentKm?v.currentKm.toLocaleString("tr-TR")+" km":""}</div></div></div>
   </div>`;
   let content="";
-  if(activeTab==="bakım")content=tabBakim(v);
+  if(activeTab==="ozet")content=tabOzet();
+  else if(activeTab==="bakım")content=tabBakim(v);
   else if(activeTab==="yakıt")content=tabYakit(v);
   else if(activeTab==="muayene")content=tabMuayene(v);
   else if(activeTab==="hasar")content=tabHasar(v);
@@ -836,6 +1064,8 @@ function renderContent(){
   else if(activeTab==="profil")content=tabProfil(v);
   else if(activeTab==="maliyet")content=tabMaliyet(v);
   else if(activeTab==="yillik")content=tabYillik(v);
+  else if(activeTab==="karsilastir")content=tabKarsilastir();
+  else if(activeTab==="sablonlar")content=tabSablonlar(v);
   document.getElementById("vehicleContent").innerHTML=coverHtml+content;
 }
 
