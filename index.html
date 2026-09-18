@@ -204,6 +204,29 @@ textarea{resize:vertical;min-height:60px;}
 .template-name{font-size:14px;font-weight:600;}
 .template-sub{font-size:12px;color:var(--muted);margin-top:2px;}
 .template-count{background:rgba(232,135,58,0.15);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;}
+
+/* SWIPE SİL */
+.swipe-wrap{position:relative;overflow:hidden;border-radius:12px;margin-bottom:8px;}
+.swipe-del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:var(--rust);display:flex;align-items:center;justify-content:center;color:white;font-size:20px;border-radius:0 12px 12px 0;}
+.swipe-card{transition:transform 0.2s;touch-action:pan-y;will-change:transform;}
+.swipe-card.swiped{transform:translateX(-80px);}
+
+/* UNDO TOAST */
+#undoToast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#2C313D;border:1px solid var(--border);color:var(--paper);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:14px;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+#undoToast.show{opacity:1;pointer-events:all;}
+#undoToast button{background:var(--accent);border:none;color:var(--ink);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* SKOR KARTI */
+.score-ring{position:relative;width:120px;height:120px;margin:0 auto 16px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-big{font-family:'Newsreader',serif;font-size:32px;font-weight:700;}
+.score-label{font-size:11px;color:var(--muted);}
+.score-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.score-item-label{font-size:13px;color:var(--muted);}
+.score-item-val{font-size:13px;font-weight:600;}
+.score-bar-wrap{flex:1;height:6px;background:var(--ink);border-radius:3px;overflow:hidden;margin:0 12px;}
+.score-bar-fill{height:100%;border-radius:3px;}
 .repeat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(127,169,127,0.15);border:1px solid var(--sage);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--sage);margin-top:4px;}
 </style>
 </head>
@@ -246,6 +269,12 @@ textarea{resize:vertical;min-height:60px;}
 
   <div id="noVehicle" class="empty" style="display:none;">Henüz araç eklemedin.<br><b>+ Araç ekle</b> ile başla.</div>
   <div id="vehicleContent" style="display:none;"></div>
+</div>
+
+<!-- UNDO TOAST -->
+<div id="undoToast">
+  <span id="undoMsg">Kayıt silindi</span>
+  <button onclick="undoDelete()">Geri Al</button>
 </div>
 
 <!-- ALT NAV -->
@@ -366,6 +395,7 @@ const TABS=[
   {id:"maliyet",icon:"💰",label:"Maliyet"},
   {id:"yillik",icon:"📈",label:"Yıllık"},
   {id:"sablonlar",icon:"📝",label:"Şablonlar"},
+  {id:"skor",icon:"⭐",label:"Skor"},
 ];
 function renderBottomNav(){
   document.getElementById("bottomNav").innerHTML=TABS.map(t=>`
@@ -474,18 +504,24 @@ function tabBakim(v){
     </div>
     ${filtered.length===0?`<div class="empty">Bakım kaydı yok.</div>`:""}
     ${filtered.map(r=>`
-      <div class="rcard">
-        <div class="rcard-top">
-          <div>
-            <div class="rcard-type">${esc(r.type)}</div>
-            <div class="rcard-meta">${fmtDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km</div>
-            ${v.repeatRules&&v.repeatRules.find(x=>x.type===r.type)?`<div class="repeat-badge">🔄 Her ${v.repeatRules.find(x=>x.type===r.type).intervalKm.toLocaleString("tr-TR")} km</div>`:""}
+      <div class="swipe-wrap" id="sw-${r.id}">
+        <div class="swipe-del-bg">🗑️</div>
+        <div class="swipe-card rcard" id="sc-${r.id}" 
+          ontouchstart="swipeStart(event,'${r.id}')" 
+          ontouchmove="swipeMove(event,'${r.id}')"
+          ontouchend="swipeEnd(event,'${r.id}','record')">
+          <div class="rcard-top">
+            <div>
+              <div class="rcard-type">${esc(r.type)}</div>
+              <div class="rcard-meta">${fmtDate(r.date)} · ${r.km.toLocaleString("tr-TR")} km</div>
+              ${v.repeatRules&&v.repeatRules.find(x=>x.type===r.type)?`<div class="repeat-badge">🔄 Her ${v.repeatRules.find(x=>x.type===r.type).intervalKm.toLocaleString("tr-TR")} km</div>`:""}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;"><div class="rcard-cost">${fmtTL(r.cost)}</div><button class="del-btn" onclick="delRecord('${r.id}')">✕</button></div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;"><div class="rcard-cost">${fmtTL(r.cost)}</div><button class="del-btn" onclick="delRecord('${r.id}')">✕</button></div>
+          ${r.photo?`<img src="${r.photo}" class="rcard-photo">`:""}
+          ${r.nextKm||r.nextDate?`<div class="rcard-next">Sonraki: ${r.nextKm?r.nextKm.toLocaleString("tr-TR")+" km":""}${r.nextKm&&r.nextDate?" / ":""}${r.nextDate?fmtDate(r.nextDate):""}</div>`:""}
+          ${r.note?`<div class="rcard-note">${esc(r.note)}</div>`:""}
         </div>
-        ${r.photo?`<img src="${r.photo}" class="rcard-photo">`:""}
-        ${r.nextKm||r.nextDate?`<div class="rcard-next">Sonraki: ${r.nextKm?r.nextKm.toLocaleString("tr-TR")+" km":""}${r.nextKm&&r.nextDate?" / ":""}${r.nextDate?fmtDate(r.nextDate):""}</div>`:""}
-        ${r.note?`<div class="rcard-note">${esc(r.note)}</div>`:""}
       </div>`).join("")}`;
 }
 
@@ -527,7 +563,7 @@ function finishRecord(v,rec,km){
   if(km>(v.currentKm||0))v.currentKm=km;
   save();hideForm("newRecordForm");renderContent();
 }
-function delRecord(id){const v=getV();if(!v)return;v.records=v.records.filter(r=>r.id!==id);save();renderContent();}
+
 
 // YAKIT
 function tabYakit(v){
@@ -596,7 +632,7 @@ function saveFuel(){
   if(km>(v.currentKm||0))v.currentKm=km;
   save();hideForm("newFuelForm");renderContent();
 }
-function delFuel(id){const v=getV();if(!v)return;v.fuelRecords=v.fuelRecords.filter(r=>r.id!==id);save();renderContent();}
+
 
 // MUAYENE/SİGORTA
 function tabMuayene(v){
@@ -641,7 +677,7 @@ function saveService(){
   v.serviceRecords.sort((a,b)=>new Date(a.date)-new Date(b.date));
   save();hideForm("newServiceForm");renderContent();
 }
-function delService(id){const v=getV();if(!v)return;v.serviceRecords=v.serviceRecords.filter(r=>r.id!==id);save();renderContent();}
+
 
 // HASAR
 function tabHasar(v){
@@ -686,7 +722,7 @@ function saveHasar(){
   if(photoFile){const reader=new FileReader();reader.onload=e=>{rec.photo=e.target.result;v.hasarRecords.unshift(rec);v.hasarRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));save();hideForm("newHasarForm");renderContent();};reader.readAsDataURL(photoFile);}
   else{v.hasarRecords.unshift(rec);v.hasarRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));save();hideForm("newHasarForm");renderContent();}
 }
-function delHasar(id){const v=getV();if(!v)return;v.hasarRecords=v.hasarRecords.filter(r=>r.id!==id);save();renderContent();}
+
 
 // RAPOR
 function tabRapor(v){
@@ -771,7 +807,7 @@ function saveContact(){
   if(!v.contacts)v.contacts=[];
   v.contacts.push({id:uid(),name,phone,note});save();hideForm("newContactForm");renderContent();
 }
-function delContact(id){const v=getV();if(!v)return;v.contacts=v.contacts.filter(c=>c.id!==id);save();renderContent();}
+
 
 // PROFİL
 function tabProfil(v){
@@ -1038,6 +1074,240 @@ function applyTemplate(templateName){
   switchTab("bakım");
 }
 
+
+// UNDO SİSTEMİ
+let undoStack=null;
+let undoTimer=null;
+
+function showUndo(msg, restoreFn){
+  if(undoTimer)clearTimeout(undoTimer);
+  undoStack=restoreFn;
+  document.getElementById("undoMsg").textContent=msg;
+  const toast=document.getElementById("undoToast");
+  toast.classList.add("show");
+  undoTimer=setTimeout(()=>{
+    toast.classList.remove("show");
+    undoStack=null;
+  },5000);
+}
+
+function undoDelete(){
+  if(undoStack){
+    undoStack();
+    save();
+    renderContent();
+  }
+  document.getElementById("undoToast").classList.remove("show");
+  undoStack=null;
+  if(undoTimer)clearTimeout(undoTimer);
+}
+
+// SWIPE İŞLEMLERİ
+let swipeStartX=0;
+let swipeStartY=0;
+let swipeDelta=0;
+
+function swipeStart(e,id){
+  swipeStartX=e.touches[0].clientX;
+  swipeStartY=e.touches[0].clientY;
+  swipeDelta=0;
+}
+
+function swipeMove(e,id){
+  const dx=e.touches[0].clientX-swipeStartX;
+  const dy=Math.abs(e.touches[0].clientY-swipeStartY);
+  if(dy>30){return;} // dikey kaydırma, iptal
+  swipeDelta=dx;
+  const card=document.getElementById("sc-"+id);
+  if(!card)return;
+  if(dx<0){
+    card.style.transform=`translateX(${Math.max(dx,-80)}px)`;
+    e.preventDefault();
+  } else if(card.classList.contains("swiped")){
+    card.style.transform=`translateX(${Math.max(-80+dx,0)}px)`;
+    e.preventDefault();
+  }
+}
+
+function swipeEnd(e,id,type){
+  const card=document.getElementById("sc-"+id);
+  if(!card)return;
+  card.style.transform="";
+  if(swipeDelta<-50){
+    // Yeterince sola kaydırıldı — sil
+    if(type==="record") delRecordSwipe(id);
+    else if(type==="fuel") delFuelSwipe(id);
+    else if(type==="hasar") delHasarSwipe(id);
+  } else {
+    card.classList.remove("swiped");
+  }
+}
+
+// SWIPE İLE SİL — UNDO destekli
+function delRecordSwipe(id){
+  const v=getV();if(!v)return;
+  const rec=v.records.find(r=>r.id===id);
+  if(!rec)return;
+  v.records=v.records.filter(r=>r.id!==id);
+  save();renderContent();
+  showUndo(`"${rec.type}" silindi`,()=>{
+    v.records.push(rec);
+    v.records.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  });
+}
+
+function delRecord(id){
+  const v=getV();if(!v)return;
+  const rec=v.records.find(r=>r.id===id);
+  if(!rec)return;
+  v.records=v.records.filter(r=>r.id!==id);
+  save();renderContent();
+  showUndo(`"${rec.type}" silindi`,()=>{
+    v.records.push(rec);
+    v.records.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  });
+}
+
+function delFuel(id){
+  const v=getV();if(!v)return;
+  const rec=(v.fuelRecords||[]).find(r=>r.id===id);
+  if(!rec)return;
+  v.fuelRecords=v.fuelRecords.filter(r=>r.id!==id);
+  save();renderContent();
+  showUndo("Yakıt kaydı silindi",()=>{
+    v.fuelRecords.push(rec);
+    v.fuelRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  });
+}
+
+function delHasar(id){
+  const v=getV();if(!v)return;
+  const rec=(v.hasarRecords||[]).find(r=>r.id===id);
+  if(!rec)return;
+  v.hasarRecords=v.hasarRecords.filter(r=>r.id!==id);
+  save();renderContent();
+  showUndo(`"${rec.type}" hasarı silindi`,()=>{
+    v.hasarRecords.push(rec);
+    v.hasarRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  });
+}
+
+function delService(id){
+  const v=getV();if(!v)return;
+  const rec=(v.serviceRecords||[]).find(r=>r.id===id);
+  if(!rec)return;
+  v.serviceRecords=v.serviceRecords.filter(r=>r.id!==id);
+  save();renderContent();
+  showUndo(`"${rec.name}" silindi`,()=>{
+    v.serviceRecords.push(rec);
+    v.serviceRecords.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  });
+}
+
+function delContact(id){
+  const v=getV();if(!v)return;
+  const rec=(v.contacts||[]).find(c=>c.id===id);
+  if(!rec)return;
+  v.contacts=v.contacts.filter(c=>c.id!==id);
+  save();renderContent();
+  showUndo(`"${rec.name}" silindi`,()=>{v.contacts.push(rec);});
+}
+
+// BAKIIM SKOR KARTI
+function tabSkor(v){
+  const now=new Date();now.setHours(0,0,0,0);
+  const diff=iso=>Math.floor((new Date(iso+"T00:00:00")-now)/86400000);
+  
+  // Skorlama kriterleri (her biri 0-100 arası)
+  const criteria=[];
+
+  // 1. Son bakımdan bu yana geçen süre (en son kayıt)
+  let recencyScore=0;
+  if(v.records.length===0){recencyScore=0;}
+  else{
+    const lastRec=new Date(v.records[0].date+"T00:00:00");
+    const daysSince=Math.floor((now-lastRec)/86400000);
+    recencyScore=daysSince<=30?100:daysSince<=60?80:daysSince<=90?60:daysSince<=180?40:20;
+  }
+  criteria.push({label:"Son Bakım Güncelliği",score:recencyScore,weight:25,
+    detail:v.records.length>0?`Son: ${fmtDate(v.records[0].date)}`:"Henüz kayıt yok"});
+
+  // 2. Gecikmiş bakım yok mu?
+  const alerts=computeAlerts(v);
+  const overdueCount=alerts.filter(a=>a.p===0).length;
+  const overdueScore=overdueCount===0?100:overdueCount===1?50:0;
+  criteria.push({label:"Gecikmiş Bakım",score:overdueScore,weight:30,
+    detail:overdueCount===0?"✅ Gecikmiş bakım yok":`⚠️ ${overdueCount} gecikmiş bakım`});
+
+  // 3. Muayene/Sigorta durumu
+  let msScore=100;
+  (v.serviceRecords||[]).forEach(s=>{
+    const d=diff(s.date);
+    if(d<0)msScore=Math.min(msScore,0);
+    else if(d<=30)msScore=Math.min(msScore,50);
+  });
+  if((v.serviceRecords||[]).length===0)msScore=60;
+  criteria.push({label:"Muayene/Sigorta",score:msScore,weight:25,
+    detail:(v.serviceRecords||[]).length===0?"Kayıt girilmemiş":msScore===100?"✅ Güncel":msScore===0?"❌ Süresi geçmiş":"⚠️ Yaklaşıyor"});
+
+  // 4. Kayıt zenginliği (kaç farklı bakım türü var?)
+  const uniqueTypes=new Set(v.records.map(r=>r.type)).size;
+  const richnessScore=Math.min(uniqueTypes*20,100);
+  criteria.push({label:"Bakım Çeşitliliği",score:richnessScore,weight:20,
+    detail:`${uniqueTypes} farklı bakım türü kaydedilmiş`});
+
+  // Ağırlıklı ortalama
+  const totalWeight=criteria.reduce((s,c)=>s+c.weight,0);
+  const totalScore=Math.round(criteria.reduce((s,c)=>s+(c.score*c.weight),0)/totalWeight);
+  
+  const scoreColor=totalScore>=80?"var(--sage)":totalScore>=60?"var(--accent)":"var(--rust)";
+  const scoreEmoji=totalScore>=80?"🏆":totalScore>=60?"👍":"⚠️";
+  const scoreLabel=totalScore>=80?"Mükemmel":totalScore>=60?"İyi":"İyileştirilmeli";
+
+  // SVG ring
+  const r=50,cx=60,cy=60,circ=2*Math.PI*r;
+  const dash=circ*(totalScore/100);
+
+  return`
+    <div class="card" style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">${esc(v.name)} — Bakım Skor Kartı</div>
+      <div class="score-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="10"
+            stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/>
+        </svg>
+        <div class="score-ring-num">
+          <div class="score-big" style="color:${scoreColor};">${totalScore}</div>
+          <div class="score-label">/100</div>
+        </div>
+      </div>
+      <div style="font-size:18px;margin-bottom:4px;">${scoreEmoji}</div>
+      <div style="font-size:16px;font-weight:700;color:${scoreColor};">${scoreLabel}</div>
+    </div>
+    <div class="card">
+      ${criteria.map(c=>{
+        const color=c.score>=80?"var(--sage)":c.score>=60?"var(--accent)":"var(--rust)";
+        return`<div class="score-item">
+          <div>
+            <div class="score-item-label">${c.label}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${c.detail}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;min-width:100px;">
+            <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${c.score}%;background:${color};"></div></div>
+            <div class="score-item-val" style="color:${color};">${c.score}</div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+    ${totalScore<80?`<div class="card" style="background:rgba(232,135,58,0.08);border-color:var(--accent);">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">💡 Skoru Artırmak İçin</div>
+      ${overdueCount>0?`<div style="font-size:13px;color:var(--muted);margin-bottom:6px;">• ${overdueCount} gecikmiş bakımı tamamla</div>`:""}
+      ${(v.serviceRecords||[]).length===0?`<div style="font-size:13px;color:var(--muted);margin-bottom:6px;">• Muayene/sigorta tarihlerini gir</div>`:""}
+      ${uniqueTypes<3?`<div style="font-size:13px;color:var(--muted);">• Daha fazla bakım türü kaydet</div>`:""}
+    </div>`:""}`;
+}
+
 // FORM HELPERS
 function showForm(id){document.getElementById(id).style.display="block";}
 function hideForm(id){document.getElementById(id).style.display="none";}
@@ -1066,6 +1336,7 @@ function renderContent(){
   else if(activeTab==="yillik")content=tabYillik(v);
   else if(activeTab==="karsilastir")content=tabKarsilastir();
   else if(activeTab==="sablonlar")content=tabSablonlar(v);
+  else if(activeTab==="skor")content=tabSkor(v);
   document.getElementById("vehicleContent").innerHTML=coverHtml+content;
 }
 
