@@ -302,6 +302,7 @@ textarea{resize:vertical;min-height:60px;}
       <button class="primary-btn" style="width:100%;padding:12px;" id="themeBtn" onclick="toggleTheme()">☀️ Aydınlık Temaya Geç</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="openShare()">📤 Uygulamayı Paylaş</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="testSpeech()">🔊 Sesi Test Et</button>
+      <button class="primary-btn" style="width:100%;padding:12px;" onclick="testNotification()">🔔 Bildirimi Test Et</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportData()">📥 Verileri İndir (JSON)</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="exportCSV()">📊 CSV İndir (Excel)</button>
       <button class="primary-btn" style="width:100%;padding:12px;" onclick="document.getElementById('importFile').click()">📂 Geri Yükle</button>
@@ -1446,19 +1447,111 @@ function speakNotification(text){
 }
 function testSpeech(){speakNotification("Araçlarım uygulamasına hoş geldiniz. Sesli bildirimler aktif.");}
 
-function checkNotifications(){
-  const t=today();
-  if(localStorage.getItem("lastNotif")===t)return;
-  let msgs=[];
+function testNotification(){
+  requestNotificationPermission().then(granted=>{
+    if(granted){
+      sendNativeNotification(
+        "🔔 Araçlarım — Test Bildirimi",
+        "Bildirimler başarıyla çalışıyor! Bakım zamanı gelince otomatik uyarı alacaksın.",
+        "test"
+      );
+      alert("✅ Bildirim gönderildi! Üstten kayar bildirim görünmeli.");
+    } else {
+      alert("❌ Bildirim izni verilmedi.\n\nTelefonun bildirim ayarlarından bu uygulamaya izin ver.");
+    }
+  });
+}
+
+// BİLDİRİM SİSTEMİ
+async function requestNotificationPermission(){
+  if(!("Notification" in window)){return false;}
+  if(Notification.permission==="granted"){return true;}
+  if(Notification.permission==="denied"){return false;}
+  const permission=await Notification.requestPermission();
+  return permission==="granted";
+}
+
+function sendNativeNotification(title, body, tag){
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  const n=new Notification(title,{
+    body,
+    tag: tag||"aracarim",
+    icon:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231A1D24'/%3E%3Cpath d='M22 62A28 28 0 1 1 78 62' stroke='%23E8873A' stroke-width='7' stroke-linecap='round' fill='none'/%3E%3Cline x1='50' y1='62' x2='68' y2='40' stroke='%23E8873A' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='62' r='7' fill='%23E8873A'/%3E%3C/svg%3E",
+    badge:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23E8873A'/%3E%3C/svg%3E",
+    requireInteraction:true,
+  });
+  n.onclick=()=>{window.focus();n.close();};
+}
+
+// Bildirimleri zamanla — her gün kontrol
+function scheduleNotifications(){
+  // Service Worker yoksa en azından uygulama açıkken çalışır
+  // APK'da (Capacitor/WebView) her açılışta çağrılır
+  const now=new Date();
+  const todayStr=today();
+  const lastCheck=localStorage.getItem("lastNotifCheck");
+  
+  // Günlük kontrol
+  if(lastCheck===todayStr) return;
+  localStorage.setItem("lastNotifCheck",todayStr);
+  
+  let urgentMsgs=[];
+  let warnMsgs=[];
+  
   vehicles.forEach(v=>{
     const alerts=computeAlerts(v);
-    alerts.filter(a=>a.p===0).forEach(a=>msgs.push(v.name+": "+a.text.replace(/[⚠️🔴🟠🟡]/g,"").trim()));
+    alerts.forEach(a=>{
+      if(a.p===0){
+        // Bugün son gün veya geçmiş
+        urgentMsgs.push({vehicle:v.name,text:a.text.replace(/[⚠️🔴🟠🟡]/g,"").trim(),sub:a.sub});
+      } else if(a.p===1){
+        // 5 gün kaldı
+        warnMsgs.push({vehicle:v.name,text:a.text.replace(/[⚠️🔴🟠🟡]/g,"").trim(),sub:a.sub});
+      }
+    });
   });
-  if(msgs.length>0){
-    const msg="Dikkat! "+msgs.join(". ");
-    setTimeout(()=>{speakNotification(msg);alert("⚠️\n"+msgs.join("\n"));},1000);
+
+  // ACİL bildirimler
+  if(urgentMsgs.length>0){
+    const title="⚠️ Araçlarım — Acil!";
+    const body=urgentMsgs.map(m=>`${m.vehicle}: ${m.text}`).join("\n");
+    setTimeout(()=>{
+      sendNativeNotification(title, body, "urgent");
+      speakNotification("Dikkat! "+urgentMsgs.map(m=>m.vehicle+": "+m.text).join(". "));
+    },1200);
   }
-  localStorage.setItem("lastNotif",t);
+  
+  // UYARI bildirimler (acil yoksa)
+  else if(warnMsgs.length>0){
+    const title="🔔 Araçlarım — Hatırlatma";
+    const body=warnMsgs.map(m=>`${m.vehicle}: ${m.text}`).join("\n");
+    setTimeout(()=>{
+      sendNativeNotification(title, body, "warning");
+    },1500);
+  }
+}
+
+function checkNotifications(){
+  // Önce izin iste, sonra bildirimleri gönder
+  requestNotificationPermission().then(granted=>{
+    if(granted){
+      scheduleNotifications();
+    } else {
+      // İzin yoksa sadece uygulama içi uyarı
+      const t=today();
+      if(localStorage.getItem("lastNotif")===t)return;
+      let msgs=[];
+      vehicles.forEach(v=>{
+        const alerts=computeAlerts(v);
+        alerts.filter(a=>a.p===0).forEach(a=>msgs.push(v.name+": "+a.text.replace(/[⚠️🔴🟠🟡]/g,"").trim()));
+      });
+      if(msgs.length>0){
+        const msg="Dikkat! "+msgs.join(". ");
+        setTimeout(()=>{speakNotification(msg);},1000);
+      }
+      localStorage.setItem("lastNotif",t);
+    }
+  });
 }
 
 // TEMA
