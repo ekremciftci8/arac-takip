@@ -73,11 +73,32 @@ body{background:var(--ink);color:var(--paper);font-family:'IBM Plex Sans',-apple
 .sw-date{font-size:11px;color:var(--muted);}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;overflow-x:auto;overflow-y:hidden;padding-bottom:env(safe-area-inset-bottom);z-index:100;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;flex-direction:row;flex-wrap:nowrap;
+  overflow-x:scroll;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  scrollbar-width:none;
+  padding-bottom:env(safe-area-inset-bottom);
+  z-index:100;
+  touch-action:pan-x;
+  -webkit-user-select:none;user-select:none;
+}
 .bottom-nav::-webkit-scrollbar{display:none;}
-.bnav-btn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;background:transparent;border:none;color:var(--muted);font-size:10px;font-family:inherit;cursor:pointer;font-weight:600;min-width:60px;}
+.bnav-btn{
+  flex:0 0 64px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:8px 4px;
+  background:transparent;border:none;
+  color:var(--muted);font-size:9px;font-family:inherit;
+  cursor:pointer;font-weight:600;
+  white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+}
 .bnav-btn.active{color:var(--accent);}
-.bnav-icon{font-size:20px;line-height:1;}
+.bnav-icon{font-size:22px;line-height:1;}
 
 /* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
@@ -402,16 +423,22 @@ const TABS=[
   {id:"skor",icon:"⭐",label:"Skor"},
 ];
 function renderBottomNav(){
-  document.getElementById("bottomNav").innerHTML=TABS.map(t=>`
+  const nav=document.getElementById("bottomNav");
+  nav.innerHTML=TABS.map(t=>`
     <button class="bnav-btn ${activeTab===t.id?'active':''}" id="bnav-${t.id}" onclick="switchTab('${t.id}')">
       <span class="bnav-icon">${t.icon}</span>
       <span>${t.label}</span>
     </button>`).join("");
-  // Aktif sekmeye scroll et
-  setTimeout(()=>{
+  // Aktif sekmeye kaydır
+  requestAnimationFrame(()=>{
     const active=document.getElementById("bnav-"+activeTab);
-    if(active)active.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
-  },50);
+    if(active){
+      const navRect=nav.getBoundingClientRect();
+      const btnRect=active.getBoundingClientRect();
+      const offset=active.offsetLeft-(navRect.width/2)+(btnRect.width/2);
+      nav.scrollTo({left:offset,behavior:"smooth"});
+    }
+  });
 }
 function switchTab(tab){
   activeTab=tab;
